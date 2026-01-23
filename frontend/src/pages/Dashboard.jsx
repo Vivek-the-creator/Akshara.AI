@@ -113,9 +113,9 @@ const Dashboard = () => {
           <a href="/writing" className="btn">
             📝 Start Writing Practice
           </a>
-          <button className="btn btn-secondary" disabled>
-            🎤 Voice Practice (Coming Soon)
-          </button>
+          <a href="/voice-practice" className="btn" style={{ background: 'linear-gradient(135deg, #667eea, #764ba2)' }}>
+            🎤 Voice Practice
+          </a>
           <button className="btn btn-secondary" disabled>
             📈 View Progress (Coming Soon)
           </button>

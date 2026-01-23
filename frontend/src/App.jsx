@@ -6,6 +6,7 @@ import Home from './pages/Home'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import WritingTutor from './pages/WritingTutor'
+import PerfectSpeechRecognition from './components/voice/PerfectSpeechRecognition'
 import { useAuth } from './contexts/AuthContext'
 
 function AppContent() {
@@ -36,6 +37,10 @@ function AppContent() {
           <Route 
             path="/writing" 
             element={user ? <WritingTutor /> : <Navigate to="/login" />} 
+          />
+          <Route 
+            path="/voice-practice" 
+            element={user ? <PerfectSpeechRecognition /> : <Navigate to="/login" />} 
           />
         </Routes>
       </div>

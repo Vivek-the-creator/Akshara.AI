@@ -38,14 +38,19 @@ api.interceptors.response.use(
 export const authService = {
   // Register new user
   async register(userData) {
+    console.log('🔍 DEBUG: authService.register called with:', userData)
     try {
+      console.log('🔍 DEBUG: Making POST request to /auth/register')
       const response = await api.post('/auth/register', userData)
+      console.log('🔍 DEBUG: Registration response:', response.data)
       return response.data
     } catch (error) {
+      console.error('❌ API Error in register:', error.response?.data || error.message)
+      console.error('❌ Full error object:', error)
       const errorMessage = error.response?.data?.detail || 
                           error.response?.data?.message || 
                           'Registration failed'
-      console.error('Registration error:', errorMessage)
+      console.error('❌ Registration error:', errorMessage)
       throw { detail: errorMessage }
     }
   },
