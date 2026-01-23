@@ -27,6 +27,11 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def get_password_hash(password: str) -> str:
     """Generate password hash"""
+    # Truncate password to 72 bytes max for bcrypt compatibility
+    password_bytes = password.encode('utf-8')
+    if len(password_bytes) > 72:
+        password_bytes = password_bytes[:72]
+        password = password_bytes.decode('utf-8', errors='ignore')
     return pwd_context.hash(password)
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
@@ -65,45 +70,81 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def register_user(user: UserCreate):
     """Register a new user"""
-    users_collection = get_collection("users")
+    print(f"🔍 DEBUG: Registration request received for user: {user.email}")
     
-    # Check if user already exists
-    existing_user = await users_collection.find_one({"email": user.email})
-    if existing_user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered"
+    try:
+        users_collection = get_collection("users")
+        if users_collection is None:
+            print("❌ DEBUG: Database collection is None!")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Database connection failed"
+            )
+        
+        print(f"🔍 DEBUG: Checking if user {user.email} already exists")
+        # Check if user already exists
+        existing_user = await users_collection.find_one({"email": user.email})
+        if existing_user:
+            print(f"❌ DEBUG: User {user.email} already exists")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Email already registered"
+            )
+        
+        print(f"🔍 DEBUG: Creating new user {user.email}")
+        # Validate password length before hashing
+        password_bytes = user.password.encode('utf-8')
+        if len(password_bytes) > 72:
+            print(f"❌ DEBUG: Password too long: {len(password_bytes)} bytes")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Password cannot be longer than 72 bytes (bcrypt limitation). Please use a shorter password."
+            )
+        
+        # Hash password and create user document
+        hashed_password = get_password_hash(user.password)
+        user_doc = {
+            "username": user.username,
+            "email": user.email,
+            "full_name": user.full_name,
+            "age": user.age,
+            "learning_language": user.learning_language,
+            "hashed_password": hashed_password,
+            "created_at": datetime.utcnow(),
+            "is_active": True
+        }
+        
+        print(f"🔍 DEBUG: Inserting user into database")
+        # Insert user into database
+        result = await users_collection.insert_one(user_doc)
+        print(f"🔍 DEBUG: User inserted with ID: {result.inserted_id}")
+        
+        # Return user response (without password)
+        user_response = UserResponse(
+            id=result.inserted_id,
+            username=user.username,
+            email=user.email,
+            full_name=user.full_name,
+            age=user.age,
+            learning_language=user.learning_language,
+            created_at=user_doc["created_at"],
+            is_active=True
         )
-    
-    # Hash password and create user document
-    hashed_password = get_password_hash(user.password)
-    user_doc = {
-        "username": user.username,
-        "email": user.email,
-        "full_name": user.full_name,
-        "age": user.age,
-        "learning_language": user.learning_language,
-        "hashed_password": hashed_password,
-        "created_at": datetime.utcnow(),
-        "is_active": True
-    }
-    
-    # Insert user into database
-    result = await users_collection.insert_one(user_doc)
-    
-    # Return user response (without password)
-    user_response = UserResponse(
-        id=result.inserted_id,
-        username=user.username,
-        email=user.email,
-        full_name=user.full_name,
-        age=user.age,
-        learning_language=user.learning_language,
-        created_at=user_doc["created_at"],
-        is_active=True
-    )
-    
-    return user_response
+        
+        print(f"✅ DEBUG: Registration successful for {user.email}")
+        return user_response
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ DEBUG: Unexpected error during registration: {str(e)}")
+        print(f"❌ DEBUG: Error type: {type(e)}")
+        import traceback
+        print(f"❌ DEBUG: Traceback: {traceback.format_exc()}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Registration failed: {str(e)}"
+        )
 
 @router.post("/login", response_model=Token)
 async def login_user(user_credentials: UserLogin):

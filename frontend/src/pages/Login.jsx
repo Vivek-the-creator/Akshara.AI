@@ -37,7 +37,6 @@ const Login = () => {
           password: formData.password
         })
       } else {
-        // Convert age to integer if provided
         const registrationData = {
           ...formData,
           age: formData.age ? parseInt(formData.age, 10) : undefined
@@ -51,7 +50,13 @@ const Login = () => {
       }
       navigate('/dashboard')
     } catch (error) {
-      console.error('Registration/Login error:', error)
+      console.error('❌ Registration/Login error:', error)
+      console.error('❌ Error details:', {
+        message: error.message,
+        detail: error.detail,
+        response: error.response?.data,
+        status: error.response?.status
+      })
       setError(error.detail || 'An error occurred')
     } finally {
       setLoading(false)

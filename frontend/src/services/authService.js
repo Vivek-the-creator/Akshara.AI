@@ -7,10 +7,12 @@ export const authService = {
       const response = await api.post('/auth/register', userData)
       return response.data
     } catch (error) {
+      console.error('❌ API Error in register:', error.response?.data || error.message)
+      console.error('❌ Full error object:', error)
       const errorMessage = error.response?.data?.detail || 
                           error.response?.data?.message || 
                           'Registration failed'
-      console.error('Registration error:', errorMessage)
+      console.error('❌ Registration error:', errorMessage)
       throw { detail: errorMessage }
     }
   },
