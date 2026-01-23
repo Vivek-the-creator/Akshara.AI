@@ -2,20 +2,19 @@ import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import ErrorBoundary from './components/ErrorBoundary'
-import Test from './Test.jsx'
+import Navbar from './components/Navbar'
 import { useAuth } from './contexts/AuthContext'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
 import WritingTutor from './pages/WritingTutor'
+import PerfectSpeechRecognition from './components/voice/PerfectSpeechRecognition'
 import LevelSelection from './pages/LevelSelection'
 import BeginnerLevels from './pages/BeginnerLevels'
 import LetterPractice from './pages/LetterPractice'
 
 function AppContent() {
   const { user, loading } = useAuth()
-  
-  console.log('AppContent - user:', user, 'loading:', loading)
   
   if (loading) {
     return (
@@ -28,10 +27,10 @@ function AppContent() {
   return (
     <ErrorBoundary>
       <div className="App">
+        <Navbar />
         <div className="container">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/test" element={<Test />} />
             <Route 
               path="/login" 
               element={!user ? <Login /> : <Navigate to="/dashboard" />} 
@@ -43,6 +42,10 @@ function AppContent() {
             <Route 
               path="/writing" 
               element={user ? <WritingTutor /> : <Navigate to="/login" />} 
+            />
+            <Route 
+              path="/voice-practice" 
+              element={user ? <PerfectSpeechRecognition /> : <Navigate to="/login" />} 
             />
             <Route 
               path="/levels" 
@@ -64,8 +67,6 @@ function AppContent() {
 }
 
 function App() {
-  console.log('App rendering...')
-  
   return (
     <AuthProvider>
       <AppContent />

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, field_validator
 from typing import Optional, Dict, Any
 from datetime import datetime
 from bson import ObjectId
@@ -30,6 +30,15 @@ class UserBase(BaseModel):
 class UserCreate(UserBase):
     """User creation model"""
     password: str
+    
+    @field_validator('password')
+    @classmethod
+    def validate_password(cls, v):
+        if len(v.encode('utf-8')) > 72:
+            raise ValueError('Password cannot be longer than 72 bytes (bcrypt limitation)')
+        if len(v) < 6:
+            raise ValueError('Password must be at least 6 characters long')
+        return v
 
 class UserResponse(UserBase):
     """User response model"""
