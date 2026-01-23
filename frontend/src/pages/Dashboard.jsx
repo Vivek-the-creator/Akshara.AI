@@ -64,8 +64,8 @@ const Dashboard = () => {
           <div className="error">{error}</div>
         ) : sessions.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '40px' }}>
-            <p>No writing sessions yet. Start your first writing practice!</p>
-            <a href="/writing" className="btn" style={{ marginTop: '20px', display: 'inline-block' }}>
+            <p>No writing sessions yet. Start your learning journey!</p>
+            <a href="/levels" className="btn" style={{ marginTop: '20px', display: 'inline-block' }}>
               Start Writing Practice
             </a>
           </div>
@@ -110,8 +110,11 @@ const Dashboard = () => {
       <div className="card">
         <h2>Quick Actions</h2>
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-          <a href="/writing" className="btn">
+          <a href="/levels" className="btn">
             📝 Start Writing Practice
+          </a>
+          <a href="/writing" className="btn btn-secondary">
+            📷 Upload Writing (Legacy)
           </a>
           <button className="btn btn-secondary" disabled>
             🎤 Voice Practice (Coming Soon)

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes import auth, user, writing
+from routes import auth, user, writing, progress
 from database import connect_to_mongo, close_mongo_connection
 import uvicorn
 
@@ -23,6 +23,7 @@ app.add_event_handler("shutdown", close_mongo_connection)
 app.include_router(auth.router, prefix="/auth", tags=["authentication"])
 app.include_router(user.router, prefix="/user", tags=["user"])
 app.include_router(writing.router, prefix="/writing", tags=["writing"])
+app.include_router(progress.router, prefix="/progress", tags=["progress"])
 
 @app.get("/")
 async def root():
