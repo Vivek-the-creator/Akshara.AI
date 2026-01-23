@@ -17,17 +17,25 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const initAuth = async () => {
-      const token = localStorage.getItem('token')
-      if (token) {
-        try {
-          const userData = await authService.getCurrentUser()
-          setUser(userData)
-        } catch (error) {
-          console.error('Failed to get current user:', error)
-          localStorage.removeItem('token')
+      try {
+        console.log('Initializing auth...')
+        const token = localStorage.getItem('token')
+        console.log('Token found:', !!token)
+        if (token) {
+          try {
+            const userData = await authService.getCurrentUser()
+            console.log('User data received:', userData)
+            setUser(userData)
+          } catch (error) {
+            console.error('Failed to get current user:', error)
+            localStorage.removeItem('token')
+          }
         }
+      } catch (error) {
+        console.error('Auth initialization error:', error)
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
     }
 
     initAuth()

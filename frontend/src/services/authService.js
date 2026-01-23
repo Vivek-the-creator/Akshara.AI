@@ -1,39 +1,4 @@
-import axios from 'axios'
-
-// Create axios instance with base configuration
-const api = axios.create({
-  baseURL: '/api',
-  headers: {
-    'Content-Type': 'application/json',
-  },
-})
-
-// Add request interceptor to include auth token
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token')
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`
-    }
-    return config
-  },
-  (error) => {
-    return Promise.reject(error)
-  }
-)
-
-// Add response interceptor to handle errors
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    console.error('API Error:', error.response?.data || error.message)
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token')
-      window.location.href = '/login'
-    }
-    return Promise.reject(error)
-  }
-)
+import api from './api'
 
 export const authService = {
   // Register new user
@@ -98,4 +63,20 @@ export const authService = {
   }
 }
 
-export default api
+export const authUtils = {
+  getToken() {
+    return localStorage.getItem('token')
+  },
+  
+  setToken(token) {
+    localStorage.setItem('token', token)
+  },
+  
+  removeToken() {
+    localStorage.removeItem('token')
+  },
+  
+  isAuthenticated() {
+    return !!this.getToken()
+  }
+}

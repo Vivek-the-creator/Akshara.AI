@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from routes import auth, user, writing
 from database import connect_to_mongo, close_mongo_connection
 import uvicorn
 
@@ -43,30 +44,10 @@ app.add_middleware(
 app.add_event_handler("startup", connect_to_mongo)
 app.add_event_handler("shutdown", close_mongo_connection)
 
-# Include routers with error handling
-try:
-    app.include_router(auth.router, prefix="/auth", tags=["authentication"])
-    print("✅ Auth routes included successfully")
-except Exception as e:
-    print(f"❌ Error including auth routes: {e}")
-
-try:
-    app.include_router(user.router, prefix="/user", tags=["user"])
-    print("✅ User routes included successfully")
-except Exception as e:
-    print(f"❌ Error including user routes: {e}")
-
-try:
-    app.include_router(writing.router, prefix="/writing", tags=["writing"])
-    print("✅ Writing routes included successfully")
-except Exception as e:
-    print(f"❌ Error including writing routes: {e}")
-
-try:
-    app.include_router(voice_practice_simple.router, prefix="/voice-practice", tags=["voice-practice"])
-    print("✅ Voice practice routes included successfully")
-except Exception as e:
-    print(f"❌ Error including voice practice routes: {e}")
+# Include routers
+app.include_router(auth.router, prefix="/auth", tags=["authentication"])
+app.include_router(user.router, prefix="/user", tags=["user"])
+app.include_router(writing.router, prefix="/writing", tags=["writing"])
 
 @app.get("/")
 async def root():

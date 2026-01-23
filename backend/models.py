@@ -87,6 +87,32 @@ class WritingSessionResponse(WritingSessionBase):
         arbitrary_types_allowed = True
         json_encoders = {ObjectId: str}
 
+class WritingProgressBase(BaseModel):
+    """Base writing progress model"""
+    user_id: str
+    language: str
+    stage: str  # Beginner, Intermediate, Pro
+    category: str  # Uyir Ezhuthugal, etc.
+    level_number: int
+    expected_character: str
+    attempts_count: int = 0
+    stars_awarded: int = 0
+    completed_at: Optional[datetime] = None
+
+class WritingProgressCreate(WritingProgressBase):
+    """Writing progress creation model"""
+    pass
+
+class WritingProgressResponse(WritingProgressBase):
+    """Writing progress response model"""
+    id: Optional[PyObjectId] = None
+    created_at: Optional[datetime] = None
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        arbitrary_types_allowed = True
+        json_encoders = {ObjectId: str}
+
 class Token(BaseModel):
     """JWT Token model"""
     access_token: str
