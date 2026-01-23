@@ -30,24 +30,18 @@ const Login = () => {
     setError('')
     setLoading(true)
 
-    console.log('🔍 DEBUG: Submitting form...', { isLogin, formData })
-
     try {
       if (isLogin) {
-        console.log('🔍 DEBUG: Attempting login...')
         await login({
           email: formData.email,
           password: formData.password
         })
       } else {
-        // Convert age to integer if provided
         const registrationData = {
           ...formData,
           age: formData.age ? parseInt(formData.age, 10) : undefined
         }
-        console.log('🔍 DEBUG: Attempting registration with data:', registrationData)
         await register(registrationData)
-        console.log('🔍 DEBUG: Registration successful, attempting login...')
         // After successful registration, log the user in
         await login({
           email: formData.email,

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import './WorkingRealVoice.css'
+import './PerfectSpeechRecognition.css'
 
 const PerfectSpeechRecognition = () => {
   const navigate = useNavigate()
@@ -357,7 +357,7 @@ const PerfectSpeechRecognition = () => {
   const progressPercentage = ((currentIndex + 1) / words.length) * 100
 
   return (
-    <div className="working-real-voice">
+    <div className="perfect-speech-recognition">
       <div className="practice-header">
         <button onClick={() => navigate('/dashboard')} className="back-button">
           ← Back to Dashboard
