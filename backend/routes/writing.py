@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, status, Depends, UploadFile, File, Form
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from datetime import datetime
 from models import WritingSessionResponse, WritingSessionCreate, PyObjectId
 from routes.auth import get_current_user
@@ -7,10 +7,115 @@ from database import get_collection
 from bson import ObjectId
 import os
 from dotenv import load_dotenv
+from services.aiEvaluator import ai_evaluator
 
 load_dotenv()
 
 router = APIRouter()
+
+@router.post("/evaluate", status_code=status.HTTP_200_OK)
+async def evaluate_handwriting(
+    file: UploadFile = File(...),
+    language: str = Form(...),
+    stage: str = Form(...),
+    level_number: int = Form(...),
+    expected_letter: str = Form(...),
+    current_user: dict = Depends(get_current_user)
+):
+    """Evaluate handwritten letter using Gemini Vision API"""
+    
+    # Validate file type
+    if not file.content_type.startswith('image/'):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="File must be an image"
+        )
+    
+    # Validate language
+    if language not in ["Tamil", "Telugu", "Hindi"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid language. Must be: Tamil, Telugu, or Hindi"
+        )
+    
+    # Validate stage
+    if stage not in ["beginner", "intermediate", "pro"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid stage. Must be: beginner, intermediate, or pro"
+        )
+    
+    # Validate level number
+    if level_number < 1 or level_number > 50:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Level number must be between 1 and 50"
+        )
+    
+    # Validate expected letter
+    if not expected_letter or len(expected_letter.strip()) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Expected letter is required"
+        )
+    
+    try:
+        # Read image data
+        image_data = await file.read()
+        
+        # Evaluate using AI
+        evaluation_result = await ai_evaluator.evaluate_handwriting(
+            image_data=image_data,
+            language=language,
+            stage=stage,
+            level_number=level_number,
+            expected_letter=expected_letter.strip()
+        )
+        
+        # Save the image for record keeping
+        upload_dir = "uploads"
+        os.makedirs(upload_dir, exist_ok=True)
+        
+        file_extension = file.filename.split('.')[-1] if '.' in file.filename else 'jpg'
+        unique_filename = f"eval_{current_user['_id']}_{datetime.utcnow().timestamp()}.{file_extension}"
+        file_path = os.path.join(upload_dir, unique_filename)
+        
+        with open(file_path, "wb") as buffer:
+            buffer.write(image_data)
+        
+        # Create evaluation record
+        evaluations_collection = get_collection("handwriting_evaluations")
+        evaluation_doc = {
+            "user_id": str(current_user["_id"]),
+            "language": language,
+            "stage": stage,
+            "level_number": level_number,
+            "expected_letter": expected_letter.strip(),
+            "image_path": file_path,
+            "original_filename": file.filename,
+            "evaluation_result": evaluation_result,
+            "created_at": datetime.utcnow()
+        }
+        
+        await evaluations_collection.insert_one(evaluation_doc)
+        
+        return {
+            "success": True,
+            "evaluation": evaluation_result,
+            "metadata": {
+                "language": language,
+                "stage": stage,
+                "level_number": level_number,
+                "expected_letter": expected_letter.strip(),
+                "evaluated_at": datetime.utcnow().isoformat()
+            }
+        }
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error evaluating handwriting: {str(e)}"
+        )
 
 @router.post("/upload", status_code=status.HTTP_201_CREATED)
 async def upload_writing_image(
