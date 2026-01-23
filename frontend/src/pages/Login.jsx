@@ -104,15 +104,19 @@ const Login = () => {
             </div>
             
             <div className="form-group">
-              <label htmlFor="learning_language">Learning Language</label>
-              <input
-                type="text"
+              <label htmlFor="learning_language">Learning Language *</label>
+              <select
                 id="learning_language"
                 name="learning_language"
                 value={formData.learning_language}
                 onChange={handleChange}
-                placeholder="e.g., English, Spanish, French"
-              />
+                required
+              >
+                <option value="">Select a language</option>
+                <option value="Tamil">Tamil</option>
+                <option value="Telugu">Telugu</option>
+                <option value="Hindi">Hindi</option>
+              </select>
             </div>
           </>
         )}
