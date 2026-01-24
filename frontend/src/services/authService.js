@@ -57,6 +57,20 @@ export const authService = {
       console.error('Get user error:', errorMessage)
       throw { detail: errorMessage }
     }
+  },
+
+  // Update user profile
+  async updateUser(userId, userData) {
+    try {
+      const response = await api.put(`/user/${userId}`, userData)
+      return response.data
+    } catch (error) {
+      const errorMessage = error.response?.data?.detail || 
+                          error.response?.data?.message || 
+                          'Failed to update user'
+      console.error('Update user error:', errorMessage)
+      throw { detail: errorMessage }
+    }
   }
 }
 
