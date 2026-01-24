@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { progressService } from '../services/progressService'
 import audioService from '../utils/audioUtils'
+import ProgressBar from '../components/ProgressBar'
 
 const BeginnerLevels = () => {
   const navigate = useNavigate()
@@ -10,6 +11,7 @@ const BeginnerLevels = () => {
   const [progress, setProgress] = useState([])
   const [loading, setLoading] = useState(true)
   const [audioLoading, setAudioLoading] = useState(null)
+  const [progressLoading, setProgressLoading] = useState(false)
 
   // Tamil Uyir Ezhuthugal (vowels) - 12 letters
   const uyirEzhuthugal = [
@@ -30,26 +32,53 @@ const BeginnerLevels = () => {
   useEffect(() => {
     // Load user progress
     const loadProgress = async () => {
+      if (progressLoading) return  // Prevent multiple simultaneous loads
+      
       try {
-        const progressData = await progressService.getUserProgress('Beginner', 'Uyir Ezhuthugal')
+        setProgressLoading(true)
+        console.log('Loading progress for user:', user?.id)
+        const progressData = await progressService.getUserProgress('beginner', 'uyir-ezhuthugal')  // Use lowercase
+        console.log('Loaded progress data:', progressData)
         setProgress(progressData)
+        
+        // Calculate and log progress stats
+        const completed = progressData.filter(p => p.completed_at).length
+        const totalStars = progressData.reduce((sum, p) => sum + (p.stars_awarded || 0), 0)
+        console.log(`Progress stats: ${completed}/12 levels completed, ${totalStars} total stars`)
+        
       } catch (error) {
         console.error('Error loading progress:', error)
-        // Continue with empty progress on error
+        // Set empty progress on error to prevent infinite loops
+        setProgress([])
       } finally {
         setLoading(false)
+        setProgressLoading(false)
       }
     }
-    loadProgress()
-  }, [])
+    
+    // Only load if user is available and has an ID
+    if (user && user.id && !progressLoading) {
+      loadProgress()
+    } else {
+      setLoading(false)
+      setProgress([])
+    }
+  }, [user?.id])  // Only depend on user ID, not the entire user object
 
   const isLevelUnlocked = (level) => {
-    if (level === 1) return true // First level is always unlocked
+    if (level === 1) {
+      console.log(`Level 1: Always unlocked`)
+      return true // First level is always unlocked
+    }
     
     // Check if previous level is completed
     const previousLevel = level - 1
     const previousProgress = progress.find(p => p.level_number === previousLevel)
-    return previousProgress?.completed_at ? true : false
+    const isUnlocked = previousProgress?.completed_at ? true : false
+    
+    console.log(`Level ${level}: Previous level ${previousLevel} completed? ${previousProgress?.completed_at ? 'Yes' : 'No'} -> ${isUnlocked ? 'Unlocked' : 'Locked'}`)
+    
+    return isUnlocked
   }
 
   const getStarsForLevel = (level) => {
@@ -61,6 +90,14 @@ const BeginnerLevels = () => {
     const levelProgress = progress.find(p => p.level_number === level)
     return levelProgress?.completed_at ? true : false
   }
+
+  // Calculate progress statistics
+  const completedLevels = progress.filter(p => p.completed_at).length
+  const totalLevels = uyirEzhuthugal.length
+  const totalStars = progress.reduce((sum, p) => sum + (p.stars_awarded || 0), 0)
+  const maxPossibleStars = totalLevels * 3
+  const progressPercentage = (completedLevels / totalLevels) * 100
+  const starsPercentage = maxPossibleStars > 0 ? (totalStars / maxPossibleStars) * 100 : 0
 
   const handleLevelClick = (levelData) => {
     if (isLevelUnlocked(levelData.level)) {
@@ -121,6 +158,52 @@ const BeginnerLevels = () => {
               <p style={{ margin: '0', color: '#4a7c4a' }}>
                 Learn the basic vowel sounds in Tamil. Master each letter to unlock the next one.
               </p>
+            </div>
+
+            {/* Learning Progress Bar */}
+            <div style={{ 
+              backgroundColor: '#f0f8ff', 
+              padding: '25px', 
+              borderRadius: '12px', 
+              marginBottom: '30px',
+              border: '2px solid #e3f2fd'
+            }}>
+              <h2 style={{ margin: '0 0 20px 0', color: '#1976d2', textAlign: 'center' }}>
+                📚 Your Learning Progress
+              </h2>
+              
+              <ProgressBar 
+                current={completedLevels}
+                total={totalLevels}
+                label={`Levels Completed: ${completedLevels} / ${totalLevels}`}
+                height="25px"
+                fillColor="#4caf50"
+                showPercentage={true}
+                showText={true}
+              />
+              
+              <div style={{ marginTop: '15px' }}>
+                <ProgressBar 
+                  current={totalStars}
+                  total={maxPossibleStars}
+                  label={`Stars Earned: ${totalStars} / ${maxPossibleStars}`}
+                  height="20px"
+                  fillColor="#ffc107"
+                  showPercentage={true}
+                  showText={true}
+                />
+              </div>
+              
+              <div style={{ 
+                marginTop: '15px', 
+                textAlign: 'center',
+                fontSize: '14px',
+                color: '#666'
+              }}>
+                <strong>Current Stage:</strong> {completedLevels === 0 ? 'Just Started!' : 
+                  completedLevels < totalLevels / 2 ? 'Making Good Progress!' :
+                  completedLevels < totalLevels ? 'Almost There!' : '🎉 Master Complete!'}
+              </div>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '20px' }}>

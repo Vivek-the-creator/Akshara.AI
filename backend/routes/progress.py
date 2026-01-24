@@ -17,16 +17,21 @@ async def get_user_progress_by_params(
     """Get user's progress by stage and category (frontend compatible endpoint)"""
     progress_collection = get_collection("writing_progress")
     
-    # Build query filter
-    query_filter = {"user_id": str(current_user.get("_id", current_user.get("id")))}
+    # Build query filter - handle both string and ObjectId user IDs
+    user_id = str(current_user.get("_id", current_user.get("id")))
+    print(f"Getting user progress with filter: {{user_id: {user_id}, stage: {stage}, category: {category}}}")
+    
+    query_filter = {"user_id": user_id}
     if stage:
-        query_filter["stage"] = stage
+        query_filter["stage"] = stage.lower()  # Convert to lowercase for consistency
     if category:
-        query_filter["category"] = category
+        query_filter["category"] = category.lower().replace("%20", " ")  # Handle URL encoding and case
     
     # Get progress records
     cursor = progress_collection.find(query_filter).sort("level_number", 1)
     progress_records = await cursor.to_list(length=100)
+    
+    print(f"Found {len(progress_records)} progress records")
     
     # Convert to dict format for frontend compatibility
     progress_list = []
@@ -60,10 +65,11 @@ async def get_level_progress(
     progress_collection = get_collection("writing_progress")
     
     # Find specific level progress
+    user_id = str(current_user.get("_id", current_user.get("id")))
     record = await progress_collection.find_one({
-        "user_id": str(current_user.get("_id", current_user.get("id"))),
-        "stage": stage,
-        "category": category.replace("%20", " "),  # Handle URL encoding
+        "user_id": user_id,
+        "stage": stage.lower(),  # Convert to lowercase
+        "category": category.replace("%20", " ").lower(),  # Handle URL encoding and case
         "level_number": level_number
     })
     
@@ -86,10 +92,10 @@ async def get_level_progress(
         # Return default progress if not found
         return {
             "id": None,
-            "user_id": str(current_user.get("_id", current_user.get("id"))),
+            "user_id": user_id,
             "language": "Tamil",
-            "stage": stage,
-            "category": category.replace("%20", " "),
+            "stage": stage.lower(),  # Use lowercase
+            "category": category.replace("%20", " ").lower(),  # Use lowercase
             "level_number": level_number,
             "expected_character": None,
             "attempts_count": 0,
@@ -108,18 +114,21 @@ async def create_or_update_progress(
     progress_collection = get_collection("writing_progress")
     
     # Check if progress record already exists for this user, stage, category, and level
+    user_id = str(current_user.get("_id", current_user.get("id")))
+    print(f"Looking for progress with user_id: {user_id}")
+    
     existing_progress = await progress_collection.find_one({
-        "user_id": str(current_user["_id"]),
-        "stage": progress.stage,
-        "category": progress.category,
+        "user_id": user_id,
+        "stage": progress.stage.lower(),  # Convert to lowercase for consistency
+        "category": progress.category.lower(),
         "level_number": progress.level_number
     })
     
     progress_doc = {
-        "user_id": str(current_user["_id"]),
+        "user_id": user_id,
         "language": progress.language,
-        "stage": progress.stage,
-        "category": progress.category,
+        "stage": progress.stage.lower(),  # Store in lowercase
+        "category": progress.category.lower(),  # Store in lowercase
         "level_number": progress.level_number,
         "expected_character": progress.expected_character,
         "attempts_count": progress.attempts_count,
