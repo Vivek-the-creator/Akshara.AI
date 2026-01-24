@@ -148,7 +148,6 @@ const LetterPractice = () => {
       // Update attempts
       const newAttempts = attempts + 1
       setAttempts(newAttempts)
-      console.log(`Attempt ${newAttempts} for level ${level} - Letter: ${currentLetter.letter}`)
 
       // Process AI evaluation result
       const isCorrect = evaluationResult && (
@@ -161,7 +160,6 @@ const LetterPractice = () => {
         // Letter is correct - save progress and show success
         const earnedStars = calculateStars(newAttempts)
         setStars(earnedStars)
-        console.log(`Correct! Earned ${earnedStars} stars based on ${newAttempts} attempts`)
         
         // Save progress
         await progressService.createOrUpdateProgress({
@@ -214,32 +212,12 @@ const LetterPractice = () => {
         // Letter is incorrect - show feedback but keep image for retry
         setMessage(evaluationResult.feedback || 'Keep practicing! Try again.')
         setMessageType('error')
-        console.log(`Incorrect! Total attempts: ${newAttempts}. Keep trying!`)
         
         // Show improvement tips
         if (evaluationResult.improvements && evaluationResult.improvements.length > 0) {
           const tips = evaluationResult.improvements.join(' ')
           setMessage(prev => `${prev} ${tips}`)
         }
-        
-        // Save progress for incorrect attempt (without marking as completed)
-        try {
-          await progressService.createOrUpdateProgress({
-            user_id: user.id,
-            language: user.learning_language || 'Tamil',
-            stage: 'beginner',
-            category: 'uyir-ezhuthugal',
-            level_number: currentLetter.level,
-            expected_character: currentLetter.letter,
-            attempts_count: newAttempts,
-            stars_awarded: 0, // No stars for incorrect attempt
-            completed_at: null // Not completed yet
-          })
-        } catch (progressError) {
-          console.error('Failed to save progress for incorrect attempt:', progressError)
-          // Don't show error to user, just log it
-        }
-        
         // Don't clear image - let user try again
       }
 
@@ -252,26 +230,126 @@ const LetterPractice = () => {
     }
   }
 
-  const handleNextLevel = () => {
-    console.log('Current level:', level, 'Type:', typeof level)
-    const currentLevelNum = parseInt(level)
-    const nextLevel = currentLevelNum + 1
-    console.log('Next level will be:', nextLevel)
-    
-    // Close modal first
-    setShowSuccess(false)
-    
-    // Navigate to next level after a short delay to ensure modal closes
-    setTimeout(() => {
-      if (nextLevel <= 12) {
-        navigate(`/practice/beginner/uyir-ezhuthugal/${nextLevel}`)
-      } else {
-        navigate('/levels/beginner')
+  const saveProgress = async (attemptCount, earnedStars, completed) => {
+    try {
+      const progressData = {
+        user_id: user.id,
+        language: user.learning_language || 'Tamil',
+        stage: 'Beginner',
+        category: 'Uyir Ezhuthugal',
+        level_number: parseInt(level),
+        expected_character: currentLetter.letter,
+        attempts_count: attemptCount,
+        stars_awarded: earnedStars,
+        completed_at: completed ? new Date().toISOString() : null
       }
-    }, 100)
-  }
+      
+      await progressService.createOrUpdateProgress(progressData)
+      console.log('Progress saved successfully:', progressData)
+    } catch (error) {
 
-  const handleRetry = () => {
+      // Update user profile with total stars
+      try {
+        const currentTotalStars = user.total_stars || 0
+        const newTotalStars = currentTotalStars + earnedStars
+        await authService.updateUser(user.id, {
+          total_stars: newTotalStars,
+          last_activity: new Date().toISOString()
+        })
+        
+        // Update local user data
+        setUser(prev => ({
+          ...prev,
+          total_stars: newTotalStars,
+          last_activity: new Date().toISOString()
+        }))
+      } catch (profileError) {
+        console.error('Failed to update user profile:', profileError)
+        // Don't fail the whole process if profile update fails
+      }
+
+      setMessage(`Excellent! ${evaluationResult.feedback || 'Great job!'}`)
+      setMessageType('success')
+      
+      // Show success message first, then show modal after a delay
+      setTimeout(() => {
+        setShowSuccess(true)
+      }, 2000) // Show message for 2 seconds, then show modal
+      
+      // Clear image and preview only after successful evaluation
+      setSelectedFile(null)
+      setImagePreview(null)
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
+    } else {
+      // Letter is incorrect - show feedback but keep image for retry
+      setMessage(evaluationResult.feedback || 'Keep practicing! Try again.')
+      setMessageType('error')
+      
+      // Show improvement tips
+      if (evaluationResult.improvements && evaluationResult.improvements.length > 0) {
+        const tips = evaluationResult.improvements.join(' ')
+        setMessage(prev => `${prev} ${tips}`)
+      }
+      // Don't clear image - let user try again
+    }
+
+  } catch (error) {
+    console.error('Error evaluating handwriting:', error)
+    setMessage('Unable to evaluate your handwriting. Please try again.')
+    setMessageType('error')
+  } finally {
+    setUploading(false)
+  }
+}
+
+const saveProgress = async (attemptCount, earnedStars, completed) => {
+  try {
+    const progressData = {
+      user_id: user.id,
+      language: user.learning_language || 'Tamil',
+      stage: 'Beginner',
+      category: 'Uyir Ezhuthugal',
+      level_number: parseInt(level),
+      expected_character: currentLetter.letter,
+      attempts_count: attemptCount,
+      stars_awarded: earnedStars,
+      completed_at: completed ? new Date().toISOString() : null
+    }
+    
+    await progressService.createOrUpdateProgress(progressData)
+    console.log('Progress saved successfully:', progressData)
+  } catch (error) {
+    console.error('Error saving progress:', error)
+  }
+}
+
+const handleNextLevel = () => {
+  console.log('Current level:', level, 'Type:', typeof level)
+  const currentLevelNum = parseInt(level)
+  const nextLevel = currentLevelNum + 1
+  console.log('Next level will be:', nextLevel)
+  
+  // Close modal first
+  setShowSuccess(false)
+  
+  // Navigate to next level after a short delay to ensure modal closes
+  setTimeout(() => {
+    if (nextLevel <= 12) {
+      navigate(`/practice/beginner/uyir-ezhuthugal/${nextLevel}`)
+    } else {
+      navigate('/levels/beginner')
+    }
+  }, 100)
+}
+
+const handleRetry = () => {
+  setShowSuccess(false)
+  setSelectedFile(null)
+  setImagePreview(null)
+  if (fileInputRef.current) {
+    fileInputRef.current.value = ''
     setShowSuccess(false)
     setSelectedFile(null)
     setImagePreview(null)
