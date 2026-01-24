@@ -6,6 +6,7 @@ import { progressService } from '../services/progressService'
 import { aiService } from '../services/aiService'
 import { authService } from '../services/authService'
 import audioService from '../utils/audioUtils'
+import ProgressBar from '../components/ProgressBar'
 
 const LetterPractice = () => {
   const navigate = useNavigate()
@@ -22,6 +23,7 @@ const LetterPractice = () => {
   const [stars, setStars] = useState(0)
   const [existingProgress, setExistingProgress] = useState(null)
   const [audioLoading, setAudioLoading] = useState(false)
+  const [overallProgress, setOverallProgress] = useState([])
 
   const fileInputRef = useRef(null)
 
@@ -47,7 +49,7 @@ const LetterPractice = () => {
     // Load existing progress for this level
     const loadProgress = async () => {
       try {
-        const progressData = await progressService.getLevelProgress('Beginner', 'Uyir Ezhuthugal', parseInt(level))
+        const progressData = await progressService.getLevelProgress('beginner', 'uyir-ezhuthugal', parseInt(level))  // Use lowercase
         setExistingProgress(progressData)
         setAttempts(progressData.attempts_count || 0)
         setStars(progressData.stars_awarded || 0)
@@ -63,10 +65,22 @@ const LetterPractice = () => {
       }
     }
     
-    if (currentLetter) {
-      loadProgress()
+    // Load overall progress for progress bar
+    const loadOverallProgress = async () => {
+      try {
+        const allProgress = await progressService.getUserProgress('beginner', 'uyir-ezhuthugal')  // Use lowercase
+        setOverallProgress(allProgress)
+      } catch (error) {
+        console.error('Error loading overall progress:', error)
+        setOverallProgress([])  // Set empty array on error
+      }
     }
-  }, [level, currentLetter])
+    
+    if (currentLetter && user && user.id) {
+      loadProgress()
+      loadOverallProgress()
+    }
+  }, [level, currentLetter?.level, user?.id])  // More specific dependencies
 
   const handleFileSelect = (e) => {
     const file = e.target.files[0]
@@ -164,17 +178,29 @@ const LetterPractice = () => {
         console.log(`Correct! Earned ${earnedStars} stars based on ${newAttempts} attempts`)
         
         // Save progress
-        await progressService.createOrUpdateProgress({
+        console.log('Saving progress with data:', {
           user_id: user.id,
-          language: user.learning_language || 'Tamil',
+          user_id_type: typeof user.id,
           stage: 'beginner',
           category: 'uyir-ezhuthugal',
+          level_number: currentLetter.level,
+          stars_awarded: earnedStars,
+          completed_at: new Date().toISOString()
+        })
+        
+        const progressResult = await progressService.createOrUpdateProgress({
+          user_id: user.id,
+          language: user.learning_language || 'Tamil',
+          stage: 'beginner',  // Use lowercase
+          category: 'uyir-ezhuthugal',  // Use lowercase
           level_number: currentLetter.level,
           expected_character: currentLetter.letter,
           attempts_count: newAttempts,
           stars_awarded: earnedStars,
           completed_at: new Date().toISOString()
         })
+        
+        console.log('Progress save result:', progressResult)
 
         // Update user profile with total stars
         try {
@@ -194,6 +220,14 @@ const LetterPractice = () => {
         } catch (profileError) {
           console.error('Failed to update user profile:', profileError)
           // Don't fail the whole process if profile update fails
+        }
+
+        // Refresh overall progress
+        try {
+          const allProgress = await progressService.getUserProgress('beginner', 'uyir-ezhuthugal')  // Use lowercase
+          setOverallProgress(allProgress)
+        } catch (progressError) {
+          console.error('Failed to refresh overall progress:', progressError)
         }
 
         setMessage(`Excellent! ${evaluationResult.feedback || 'Great job!'}`)
@@ -224,17 +258,28 @@ const LetterPractice = () => {
         
         // Save progress for incorrect attempt (without marking as completed)
         try {
-          await progressService.createOrUpdateProgress({
+          console.log('Saving incorrect attempt progress:', {
             user_id: user.id,
-            language: user.learning_language || 'Tamil',
             stage: 'beginner',
             category: 'uyir-ezhuthugal',
+            level_number: currentLetter.level,
+            attempts_count: newAttempts,
+            stars_awarded: 0
+          })
+          
+          const incorrectResult = await progressService.createOrUpdateProgress({
+            user_id: user.id,
+            language: user.learning_language || 'Tamil',
+            stage: 'beginner',  // Use lowercase
+            category: 'uyir-ezhuthugal',  // Use lowercase
             level_number: currentLetter.level,
             expected_character: currentLetter.letter,
             attempts_count: newAttempts,
             stars_awarded: 0, // No stars for incorrect attempt
             completed_at: null // Not completed yet
           })
+          
+          console.log('Incorrect attempt save result:', incorrectResult)
         } catch (progressError) {
           console.error('Failed to save progress for incorrect attempt:', progressError)
           // Don't show error to user, just log it
@@ -309,6 +354,37 @@ const LetterPractice = () => {
           >
             ← Back to Levels
           </button>
+        </div>
+
+        {/* Overall Progress Bar */}
+        <div style={{ 
+          backgroundColor: '#f0f8ff', 
+          padding: '20px', 
+          borderRadius: '8px', 
+          marginBottom: '30px',
+          border: '1px solid #e3f2fd'
+        }}>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            marginBottom: '10px'
+          }}>
+            <h3 style={{ margin: '0', color: '#1976d2', fontSize: '16px' }}>
+              📊 Overall Progress
+            </h3>
+            <span style={{ fontSize: '14px', color: '#666' }}>
+              Level {level} of 12
+            </span>
+          </div>
+          <ProgressBar 
+            current={overallProgress.filter(p => p.completed_at).length}
+            total={12}
+            height="20px"
+            fillColor="#4caf50"
+            showPercentage={true}
+            showText={false}
+          />
         </div>
 
         {/* Success Modal */}
