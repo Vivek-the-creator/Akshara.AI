@@ -5,13 +5,11 @@ export const aiService = {
   async evaluateHandwriting(file, language, stage, levelNumber, expectedLetter) {
     try {
       const formData = new FormData()
-      formData.append('file', file)
-      formData.append('language', language)
-      formData.append('stage', stage)
-      formData.append('level_number', levelNumber.toString())
+      formData.append('image', file)
       formData.append('expected_letter', expectedLetter)
+      formData.append('level', stage)
 
-      const response = await api.post('/writing/evaluate', formData, {
+      const response = await api.post('/handwriting/evaluate', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

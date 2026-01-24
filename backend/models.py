@@ -16,7 +16,7 @@ class PyObjectId(ObjectId):
         return ObjectId(v)
 
     @classmethod
-    def __get_pydantic_json_schema__(cls, field_schema):
+    def __get_pydantic_json_schema__(cls, field_schema, field_type):
         field_schema.update(type="string")
 
 class UserBase(BaseModel):
@@ -45,6 +45,8 @@ class UserResponse(UserBase):
     id: Optional[PyObjectId] = None
     created_at: Optional[datetime] = None
     is_active: bool = True
+    total_stars: Optional[int] = 0
+    last_activity: Optional[datetime] = None
 
     class Config:
         arbitrary_types_allowed = True

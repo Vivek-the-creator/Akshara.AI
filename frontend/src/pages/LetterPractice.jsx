@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { writingService } from '../services/writingService'
 import { progressService } from '../services/progressService'
 import { aiService } from '../services/aiService'
+import { authService } from '../services/authService'
 import audioService from '../utils/audioUtils'
 
 const LetterPractice = () => {
@@ -149,51 +150,75 @@ const LetterPractice = () => {
       setAttempts(newAttempts)
 
       // Process AI evaluation result
-      if (evaluationResult.success && evaluationResult.evaluation) {
-        const evaluation = evaluationResult.evaluation
+      const isCorrect = evaluationResult && (
+        evaluationResult.is_acceptable === true && 
+        evaluationResult.can_proceed === true &&
+        evaluationResult.matches_expected === true
+      )
+      
+      if (isCorrect) {
+        // Letter is correct - save progress and show success
+        const earnedStars = calculateStars(newAttempts)
+        setStars(earnedStars)
         
-        if (evaluation.is_correct || evaluation.can_proceed) {
-          // Letter is correct - save progress and show success
-          const earnedStars = calculateStars(newAttempts)
-          setStars(earnedStars)
-          
-          // Save progress
-          await progressService.createOrUpdateProgress({
-            user_id: user.id,
-            language: user.learning_language || 'Tamil',
-            stage: 'beginner',
-            category: 'uyir-ezhuthugal',
-            level_number: currentLetter.level,
-            expected_character: currentLetter.letter,
-            attempts_count: newAttempts,
-            stars_awarded: earnedStars,
-            completed_at: new Date().toISOString()
-          })
+        // Save progress
+        await progressService.createOrUpdateProgress({
+          user_id: user.id,
+          language: user.learning_language || 'Tamil',
+          stage: 'beginner',
+          category: 'uyir-ezhuthugal',
+          level_number: currentLetter.level,
+          expected_character: currentLetter.letter,
+          attempts_count: newAttempts,
+          stars_awarded: earnedStars,
+          completed_at: new Date().toISOString()
+        })
 
-          setMessage(`Excellent! ${evaluation.feedback || 'Great job!'}`)
-          setMessageType('success')
+        // Update user profile with total stars
+        try {
+          const currentTotalStars = user.total_stars || 0
+          const newTotalStars = currentTotalStars + earnedStars
+          await authService.updateUser(user.id, {
+            total_stars: newTotalStars,
+            last_activity: new Date().toISOString()
+          })
+          
+          // Update local user data
+          setUser(prev => ({
+            ...prev,
+            total_stars: newTotalStars,
+            last_activity: new Date().toISOString()
+          }))
+        } catch (profileError) {
+          console.error('Failed to update user profile:', profileError)
+          // Don't fail the whole process if profile update fails
+        }
+
+        setMessage(`Excellent! ${evaluationResult.feedback || 'Great job!'}`)
+        setMessageType('success')
+        
+        // Show success message first, then show modal after a delay
+        setTimeout(() => {
           setShowSuccess(true)
-          
-          // Clear image and preview only after successful evaluation
-          setSelectedFile(null)
-          setImagePreview(null)
-          if (fileInputRef.current) {
-            fileInputRef.current.value = ''
-          }
-        } else {
-          // Letter is incorrect - show feedback but keep image for retry
-          setMessage(evaluation.feedback || 'Keep practicing! Try again.')
-          setMessageType('error')
-          
-          // Show improvement tips
-          if (evaluation.improvements && evaluation.improvements.length > 0) {
-            const tips = evaluation.improvements.join(' ')
-            setMessage(prev => `${prev} ${tips}`)
-          }
-          // Don't clear image - let user try again
+        }, 2000) // Show message for 2 seconds, then show modal
+        
+        // Clear image and preview only after successful evaluation
+        setSelectedFile(null)
+        setImagePreview(null)
+        if (fileInputRef.current) {
+          fileInputRef.current.value = ''
         }
       } else {
-        throw new Error('AI evaluation failed')
+        // Letter is incorrect - show feedback but keep image for retry
+        setMessage(evaluationResult.feedback || 'Keep practicing! Try again.')
+        setMessageType('error')
+        
+        // Show improvement tips
+        if (evaluationResult.improvements && evaluationResult.improvements.length > 0) {
+          const tips = evaluationResult.improvements.join(' ')
+          setMessage(prev => `${prev} ${tips}`)
+        }
+        // Don't clear image - let user try again
       }
 
     } catch (error) {
@@ -297,9 +322,9 @@ const LetterPractice = () => {
               maxWidth: '400px'
             }}>
               <div style={{ fontSize: '64px', marginBottom: '20px' }}>🎉</div>
-              <h2 style={{ margin: '0 0 10px 0', color: '#28a745' }}>Level Cleared!</h2>
+              <h2 style={{ margin: '0 0 10px 0', color: '#28a745' }}>Congratulation!</h2>
               <p style={{ margin: '0 0 20px 0', color: '#666' }}>
-                You successfully wrote "{currentLetter.letter}"
+                {message || `You successfully wrote "${currentLetter.letter}"`}
               </p>
               
               <div style={{ marginBottom: '20px' }}>
@@ -338,7 +363,7 @@ const LetterPractice = () => {
                     onClick={handleNextLevel}
                     className="btn"
                   >
-                    Next Level →
+                    Move to next level →
                   </button>
                 )}
                 {parseInt(level) === 12 && (

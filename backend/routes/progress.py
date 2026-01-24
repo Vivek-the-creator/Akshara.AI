@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, status, Depends
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from datetime import datetime
 from models import WritingProgressResponse, WritingProgressCreate, PyObjectId
 from routes.auth import get_current_user
@@ -7,6 +7,97 @@ from database import get_collection
 from bson import ObjectId
 
 router = APIRouter()
+
+@router.get("/user")
+async def get_user_progress_by_params(
+    stage: Optional[str] = None,
+    category: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get user's progress by stage and category (frontend compatible endpoint)"""
+    progress_collection = get_collection("writing_progress")
+    
+    # Build query filter
+    query_filter = {"user_id": str(current_user.get("_id", current_user.get("id")))}
+    if stage:
+        query_filter["stage"] = stage
+    if category:
+        query_filter["category"] = category
+    
+    # Get progress records
+    cursor = progress_collection.find(query_filter).sort("level_number", 1)
+    progress_records = await cursor.to_list(length=100)
+    
+    # Convert to dict format for frontend compatibility
+    progress_list = []
+    for record in progress_records:
+        progress_dict = {
+            "id": str(record["_id"]),
+            "user_id": record["user_id"],
+            "language": record.get("language", "Tamil"),
+            "stage": record.get("stage"),
+            "category": record.get("category"),
+            "level_number": record.get("level_number"),
+            "expected_character": record.get("expected_character"),
+            "attempts_count": record.get("attempts_count", 0),
+            "stars_awarded": record.get("stars_awarded", 0),
+            "completed_at": record.get("completed_at"),
+            "created_at": record.get("created_at"),
+            "updated_at": record.get("updated_at")
+        }
+        progress_list.append(progress_dict)
+    
+    return progress_list
+
+@router.get("/level/{stage}/{category}/{level_number}")
+async def get_level_progress(
+    stage: str,
+    category: str,
+    level_number: int,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get progress for a specific level"""
+    progress_collection = get_collection("writing_progress")
+    
+    # Find specific level progress
+    record = await progress_collection.find_one({
+        "user_id": str(current_user.get("_id", current_user.get("id"))),
+        "stage": stage,
+        "category": category.replace("%20", " "),  # Handle URL encoding
+        "level_number": level_number
+    })
+    
+    if record:
+        return {
+            "id": str(record["_id"]),
+            "user_id": record["user_id"],
+            "language": record.get("language", "Tamil"),
+            "stage": record.get("stage"),
+            "category": record.get("category"),
+            "level_number": record.get("level_number"),
+            "expected_character": record.get("expected_character"),
+            "attempts_count": record.get("attempts_count", 0),
+            "stars_awarded": record.get("stars_awarded", 0),
+            "completed_at": record.get("completed_at"),
+            "created_at": record.get("created_at"),
+            "updated_at": record.get("updated_at")
+        }
+    else:
+        # Return default progress if not found
+        return {
+            "id": None,
+            "user_id": str(current_user.get("_id", current_user.get("id"))),
+            "language": "Tamil",
+            "stage": stage,
+            "category": category.replace("%20", " "),
+            "level_number": level_number,
+            "expected_character": None,
+            "attempts_count": 0,
+            "stars_awarded": 0,
+            "completed_at": None,
+            "created_at": None,
+            "updated_at": None
+        }
 
 @router.post("/progress", response_model=WritingProgressResponse, status_code=status.HTTP_201_CREATED)
 async def create_or_update_progress(

@@ -37,7 +37,9 @@ async def get_user(user_id: str, current_user: dict = Depends(get_current_user))
         age=user.get("age"),
         learning_language=user.get("learning_language"),
         created_at=user["created_at"],
-        is_active=user["is_active"]
+        is_active=user["is_active"],
+        total_stars=user.get("total_stars", 0),
+        last_activity=user.get("last_activity")
     )
 
 @router.get("/", response_model=List[UserResponse])
@@ -59,7 +61,9 @@ async def get_users(skip: int = 0, limit: int = 10, current_user: dict = Depends
             age=user.get("age"),
             learning_language=user.get("learning_language"),
             created_at=user["created_at"],
-            is_active=user["is_active"]
+            is_active=user["is_active"],
+            total_stars=user.get("total_stars", 0),
+            last_activity=user.get("last_activity")
         ))
     
     return user_list
@@ -112,5 +116,7 @@ async def update_user(user_id: str, user_update: dict, current_user: dict = Depe
         age=updated_user.get("age"),
         learning_language=updated_user.get("learning_language"),
         created_at=updated_user["created_at"],
-        is_active=updated_user["is_active"]
+        is_active=updated_user["is_active"],
+        total_stars=updated_user.get("total_stars", 0),
+        last_activity=updated_user.get("last_activity")
     )
