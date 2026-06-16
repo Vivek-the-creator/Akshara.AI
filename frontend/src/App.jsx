@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import ErrorBoundary from './components/ErrorBoundary'
+import LoadingScreen from './components/LoadingScreen'
 
 import { useAuth } from './contexts/AuthContext'
 import Home from './pages/Home'
@@ -84,10 +85,17 @@ function AppContent() {
 }
 
 function App() {
+  const [loaded, setLoaded] = useState(false)
+
   return (
-    <AuthProvider>
-      <AppContent />
-    </AuthProvider>
+    <>
+      <LoadingScreen onComplete={() => setLoaded(true)} />
+      {loaded && (
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+      )}
+    </>
   )
 }
 
