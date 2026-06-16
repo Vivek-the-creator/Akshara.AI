@@ -3,374 +3,209 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { progressService } from '../services/progressService'
 import audioService from '../utils/audioUtils'
-import ProgressBar from '../components/ProgressBar'
+import './BeginnerLevels.css'
 
-const BeginnerLevels = () => {
+const UYIR = [
+  { letter: 'அ', rom: 'ah',  level: 1  },
+  { letter: 'ஆ', rom: 'aa',  level: 2  },
+  { letter: 'இ', rom: 'i',   level: 3  },
+  { letter: 'ஈ', rom: 'ii',  level: 4  },
+  { letter: 'உ', rom: 'u',   level: 5  },
+  { letter: 'ஊ', rom: 'uu',  level: 6  },
+  { letter: 'எ', rom: 'e',   level: 7  },
+  { letter: 'ஏ', rom: 'ee',  level: 8  },
+  { letter: 'ஐ', rom: 'ai',  level: 9  },
+  { letter: 'ஒ', rom: 'o',   level: 10 },
+  { letter: 'ஓ', rom: 'oo',  level: 11 },
+  { letter: 'ஔ', rom: 'au',  level: 12 },
+]
+
+/* alternating offsets for a winding path */
+const OFFSETS = [0, 120, 220, 120, 0, -120, -220, -120, 0, 120, 220, 120]
+
+const CREATURES = ['🐓','🐇','🦋','🐢','🦎','🐿️','🦜','🐝','🌺','🍄','🦔','⭐']
+
+const PARTICLES = Array.from({ length: 20 }, (_, i) => ({
+  id: i, x: Math.random() * 100, y: Math.random() * 100,
+  size: Math.random() * 3 + 1.5,
+  delay: Math.random() * 6, duration: Math.random() * 5 + 4,
+}))
+
+export default function BeginnerLevels() {
   const navigate = useNavigate()
-  const { user } = useAuth()
-  const [progress, setProgress] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [audioLoading, setAudioLoading] = useState(null)
-  const [progressLoading, setProgressLoading] = useState(false)
-
-  // Tamil Uyir Ezhuthugal (vowels) - 12 letters
-  const uyirEzhuthugal = [
-    { letter: 'அ', pronunciation: 'ah', level: 1 },
-    { letter: 'ஆ', pronunciation: 'aa', level: 2 },
-    { letter: 'இ', pronunciation: 'i', level: 3 },
-    { letter: 'ஈ', pronunciation: 'ii', level: 4 },
-    { letter: 'உ', pronunciation: 'u', level: 5 },
-    { letter: 'ஊ', pronunciation: 'uu', level: 6 },
-    { letter: 'எ', pronunciation: 'e', level: 7 },
-    { letter: 'ஏ', pronunciation: 'ee', level: 8 },
-    { letter: 'ஐ', pronunciation: 'ai', level: 9 },
-    { letter: 'ஒ', pronunciation: 'o', level: 10 },
-    { letter: 'ஓ', pronunciation: 'oo', level: 11 },
-    { letter: 'ஔ', pronunciation: 'au', level: 12 }
-  ]
+  const { user }  = useAuth()
+  const [progress,      setProgress]      = useState([])
+  const [loading,       setLoading]       = useState(true)
+  const [audioLoading,  setAudioLoading]  = useState(null)
+  const [mounted,       setMounted]       = useState(false)
+  const [celebrating,   setCelebrating]   = useState(null)
 
   useEffect(() => {
-    // Load user progress
-    const loadProgress = async () => {
-      if (progressLoading) return  // Prevent multiple simultaneous loads
-      
-      try {
-        setProgressLoading(true)
-        console.log('Loading progress for user:', user?.id)
-        const progressData = await progressService.getUserProgress('beginner', 'uyir-ezhuthugal')  // Use lowercase
-        console.log('Loaded progress data:', progressData)
-        setProgress(progressData)
-        
-        // Calculate and log progress stats
-        const completed = progressData.filter(p => p.completed_at).length
-        const totalStars = progressData.reduce((sum, p) => sum + (p.stars_awarded || 0), 0)
-        console.log(`Progress stats: ${completed}/12 levels completed, ${totalStars} total stars`)
-        
-      } catch (error) {
-        console.error('Error loading progress:', error)
-        // Set empty progress on error to prevent infinite loops
-        setProgress([])
-      } finally {
-        setLoading(false)
-        setProgressLoading(false)
-      }
-    }
-    
-    // Only load if user is available and has an ID
-    if (user && user.id && !progressLoading) {
-      loadProgress()
-    } else {
-      setLoading(false)
-      setProgress([])
-    }
-  }, [user?.id])  // Only depend on user ID, not the entire user object
+    setMounted(true)
+    if (!user?.id) { setLoading(false); return }
+    progressService.getUserProgress('beginner', 'uyir-ezhuthugal')
+      .then(d => setProgress(d))
+      .catch(() => setProgress([]))
+      .finally(() => setLoading(false))
+  }, [user?.id])
 
-  const isLevelUnlocked = (level) => {
-    if (level === 1) {
-      console.log(`Level 1: Always unlocked`)
-      return true // First level is always unlocked
-    }
-    
-    // Check if previous level is completed
-    const previousLevel = level - 1
-    const previousProgress = progress.find(p => p.level_number === previousLevel)
-    const isUnlocked = previousProgress?.completed_at ? true : false
-    
-    console.log(`Level ${level}: Previous level ${previousLevel} completed? ${previousProgress?.completed_at ? 'Yes' : 'No'} -> ${isUnlocked ? 'Unlocked' : 'Locked'}`)
-    
-    return isUnlocked
+  const isCompleted = (lvl) => progress.find(p => p.level_number === lvl)?.completed_at ?? false
+  const isUnlocked  = (lvl) => lvl === 1 || isCompleted(lvl - 1)
+  const getStars    = (lvl) => progress.find(p => p.level_number === lvl)?.stars_awarded ?? 0
+
+  const completedCount = UYIR.filter(l => isCompleted(l.level)).length
+  const totalStars     = progress.reduce((s, p) => s + (p.stars_awarded || 0), 0)
+
+  const handleClick = (item) => {
+    if (!isUnlocked(item.level)) return
+    setCelebrating(item.level)
+    setTimeout(() => {
+      setCelebrating(null)
+      navigate(`/practice/beginner/uyir-ezhuthugal/${item.level}`)
+    }, 400)
   }
 
-  const getStarsForLevel = (level) => {
-    const levelProgress = progress.find(p => p.level_number === level)
-    return levelProgress?.stars_awarded || 0
-  }
-
-  const isLevelCompleted = (level) => {
-    const levelProgress = progress.find(p => p.level_number === level)
-    return levelProgress?.completed_at ? true : false
-  }
-
-  // Calculate progress statistics
-  const completedLevels = progress.filter(p => p.completed_at).length
-  const totalLevels = uyirEzhuthugal.length
-  const totalStars = progress.reduce((sum, p) => sum + (p.stars_awarded || 0), 0)
-  const maxPossibleStars = totalLevels * 3
-  const progressPercentage = (completedLevels / totalLevels) * 100
-  const starsPercentage = maxPossibleStars > 0 ? (totalStars / maxPossibleStars) * 100 : 0
-
-  const handleLevelClick = (levelData) => {
-    if (isLevelUnlocked(levelData.level)) {
-      navigate(`/practice/beginner/uyir-ezhuthugal/${levelData.level}`)
-    }
-  }
-
-  const playPronunciation = async (letter, event) => {
-    event.stopPropagation()
-    
+  const playAudio = async (letter, e) => {
+    e.stopPropagation()
     try {
-      if (!audioService.isSupported()) {
-        alert('Speech synthesis is not supported in your browser. Please try Chrome, Edge, or Safari.')
-        return
-      }
-      
+      if (!audioService.isSupported()) return
       setAudioLoading(letter)
-      
       await audioService.pronounceLetter(letter, user?.learning_language || 'Tamil')
-      
-    } catch (error) {
-      console.error('Error playing pronunciation:', error)
-      alert('Unable to play pronunciation. Please check your browser settings.')
-    } finally {
-      setAudioLoading(null)
-    }
+    } catch (_) {}
+    finally { setAudioLoading(null) }
   }
 
   return (
-    <div>
+    <div className="bl-root">
+      {/* background */}
+      <div className="bl-bg-village" />
+      {PARTICLES.map(p => (
+        <span key={p.id} className="bl-particle" style={{
+          left: `${p.x}%`, top: `${p.y}%`,
+          width: p.size, height: p.size,
+          animationDelay: `${p.delay}s`, animationDuration: `${p.duration}s`,
+        }} />
+      ))}
+
+      {/* header */}
+      <div className="bl-header">
+        <button className="bl-back" onClick={() => navigate('/levels')}>← Worlds</button>
+
+        <div className="bl-title-block">
+          <span className="bl-world-badge">🏘️ Village</span>
+          <h1 className="bl-title">உயிர் எழுத்துக்கள்</h1>
+          <p className="bl-title-sub">Tamil Vowels · Uyir Ezhuthugal</p>
+        </div>
+
+        <div className="bl-stats">
+          <div className="bl-stat">
+            <span className="bl-stat-val">{completedCount}/12</span>
+            <span className="bl-stat-lbl">Lessons</span>
+          </div>
+          <div className="bl-stat-divider" />
+          <div className="bl-stat">
+            <span className="bl-stat-val">⭐ {totalStars}</span>
+            <span className="bl-stat-lbl">Stars</span>
+          </div>
+        </div>
+      </div>
+
+      {/* progress bar */}
+      <div className="bl-progress-wrap">
+        <div className="bl-progress-track">
+          <div className="bl-progress-fill" style={{ width: mounted ? `${(completedCount / 12) * 100}%` : '0%' }} />
+        </div>
+        <span className="bl-progress-pct">{Math.round((completedCount / 12) * 100)}%</span>
+      </div>
+
+      {/* lesson path */}
       {loading ? (
-        <div className="card">
-          <div className="loading">Loading your progress...</div>
+        <div className="bl-loading">
+          {[1,2,3].map(i => <div key={i} className="bl-skel" style={{ animationDelay: `${i*0.15}s` }} />)}
         </div>
       ) : (
-        <>
-          <div className="card">
-            <h1>Beginner Stage</h1>
-            <div style={{ marginBottom: '30px' }}>
-              <button 
-                onClick={() => navigate('/levels')}
-                style={{
-                  background: 'none',
-                  border: '1px solid #ccc',
-                  padding: '8px 16px',
-                  borderRadius: '4px',
-                  cursor: 'pointer'
-                }}
+        <div className={`bl-path ${mounted ? 'bl-mounted' : ''}`}>
+          {UYIR.map((item, idx) => {
+            const done      = isCompleted(item.level)
+            const unlocked  = isUnlocked(item.level)
+            const active    = unlocked && !done
+            const stars     = getStars(item.level)
+            const offset    = OFFSETS[idx]
+            const isCurrent = active && UYIR.filter(l => isCompleted(l.level)).length === idx
+
+            return (
+              <div
+                key={item.level}
+                className="bl-node-row"
+                style={{ '--offset': `${offset}px`, animationDelay: `${idx * 0.07}s` }}
               >
-                ← Back to Stages
-              </button>
-            </div>
+                {/* connector */}
+                {idx > 0 && (
+                  <div className={`bl-connector ${isCompleted(item.level - 1) ? 'bl-conn-done' : ''}`} />
+                )}
 
-            <div style={{ backgroundColor: '#e8f5e8', padding: '20px', borderRadius: '8px', marginBottom: '30px' }}>
-              <h2 style={{ margin: '0 0 10px 0', color: '#2d5a2d' }}>
-                உயிர் எழுத்துக்கள் (Uyir Ezhuthugal)
-              </h2>
-              <p style={{ margin: '0', color: '#4a7c4a' }}>
-                Learn the basic vowel sounds in Tamil. Master each letter to unlock the next one.
-              </p>
-            </div>
+                {/* node */}
+                <div
+                  className={`bl-node ${done ? 'bl-node-done' : ''} ${isCurrent ? 'bl-node-current' : ''} ${!unlocked ? 'bl-node-locked' : ''} ${celebrating === item.level ? 'bl-node-celebrate' : ''}`}
+                  onClick={() => handleClick(item)}
+                >
+                  {/* glow rings */}
+                  {isCurrent && <div className="bl-node-ring" />}
+                  {isCurrent && <div className="bl-node-ring bl-ring-2" />}
+                  {done && <div className="bl-gold-glow" />}
 
-            {/* Learning Progress Bar */}
-            <div style={{ 
-              backgroundColor: '#f0f8ff', 
-              padding: '25px', 
-              borderRadius: '12px', 
-              marginBottom: '30px',
-              border: '2px solid #e3f2fd'
-            }}>
-              <h2 style={{ margin: '0 0 20px 0', color: '#1976d2', textAlign: 'center' }}>
-                📚 Your Learning Progress
-              </h2>
-              
-              <ProgressBar 
-                current={completedLevels}
-                total={totalLevels}
-                label={`Levels Completed: ${completedLevels} / ${totalLevels}`}
-                height="25px"
-                fillColor="#4caf50"
-                showPercentage={true}
-                showText={true}
-              />
-              
-              <div style={{ marginTop: '15px' }}>
-                <ProgressBar 
-                  current={totalStars}
-                  total={maxPossibleStars}
-                  label={`Stars Earned: ${totalStars} / ${maxPossibleStars}`}
-                  height="20px"
-                  fillColor="#ffc107"
-                  showPercentage={true}
-                  showText={true}
-                />
-              </div>
-              
-              <div style={{ 
-                marginTop: '15px', 
-                textAlign: 'center',
-                fontSize: '14px',
-                color: '#666'
-              }}>
-                <strong>Current Stage:</strong> {completedLevels === 0 ? 'Just Started!' : 
-                  completedLevels < totalLevels / 2 ? 'Making Good Progress!' :
-                  completedLevels < totalLevels ? 'Almost There!' : '🎉 Master Complete!'}
-              </div>
-            </div>
+                  {/* creature badge */}
+                  {unlocked && (
+                    <div className="bl-creature">{CREATURES[idx]}</div>
+                  )}
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '20px' }}>
-              {uyirEzhuthugal.map((item) => {
-                const isUnlocked = isLevelUnlocked(item.level)
-                const stars = getStarsForLevel(item.level)
-                const isCompleted = isLevelCompleted(item.level)
-
-                return (
-                  <div
-                    key={item.level}
-                    onClick={() => handleLevelClick(item)}
-                    style={{
-                      padding: '25px 15px',
-                      borderRadius: '12px',
-                      backgroundColor: isUnlocked ? '#ffffff' : '#f8f9fa',
-                      border: isUnlocked 
-                        ? (isCompleted ? '2px solid #28a745' : '2px solid #007bff') 
-                        : '2px solid #dee2e6',
-                      cursor: isUnlocked ? 'pointer' : 'not-allowed',
-                      textAlign: 'center',
-                      transition: 'all 0.3s ease',
-                      opacity: isUnlocked ? 1 : 0.6,
-                      position: 'relative',
-                      minHeight: '180px'
-                    }}
-                    onMouseEnter={(e) => {
-                      if (isUnlocked) {
-                        e.currentTarget.style.transform = 'scale(1.05)'
-                        e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)'
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (isUnlocked) {
-                        e.currentTarget.style.transform = 'scale(1)'
-                        e.currentTarget.style.boxShadow = 'none'
-                      }
-                    }}
-                  >
-                    {/* Level Number */}
-                    <div style={{
-                      position: 'absolute',
-                      top: '10px',
-                      left: '10px',
-                      backgroundColor: '#6c757d',
-                      color: 'white',
-                      borderRadius: '50%',
-                      width: '24px',
-                      height: '24px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '12px',
-                      fontWeight: 'bold'
-                    }}>
-                      {item.level}
-                    </div>
-
-                    {/* Lock Icon for locked levels */}
-                    {!isUnlocked && (
-                      <div style={{
-                        position: 'absolute',
-                        top: '10px',
-                        right: '10px',
-                        fontSize: '20px'
-                      }}>
-                        🔒
-                      </div>
+                  {/* node face */}
+                  <div className="bl-node-face">
+                    {!unlocked ? (
+                      <span className="bl-lock">🔮</span>
+                    ) : (
+                      <span className="bl-letter">{item.letter}</span>
                     )}
-
-                    {/* Letter Display */}
-                    <div style={{ 
-                      fontSize: '48px', 
-                      fontWeight: 'bold', 
-                      margin: '20px 0 10px 0',
-                      color: isUnlocked ? '#2d5a2d' : '#999'
-                    }}>
-                      {item.letter}
-                    </div>
-
-                    {/* Pronunciation Button */}
-                    {isUnlocked && (
-                      <button
-                        onClick={(e) => playPronunciation(item.letter, e)}
-                        disabled={audioLoading === item.letter}
-                        style={{
-                          background: 'none',
-                          border: '1px solid #007bff',
-                          borderRadius: '50%',
-                          width: '32px',
-                          height: '32px',
-                          cursor: audioLoading === item.letter ? 'not-allowed' : 'pointer',
-                          fontSize: '14px',
-                          marginBottom: '10px',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          margin: '0 auto 10px auto',
-                          transition: 'all 0.3s ease',
-                          opacity: audioLoading === item.letter ? 0.6 : 1,
-                          backgroundColor: audioLoading === item.letter ? '#f0f0f0' : 'transparent'
-                        }}
-                        title={`Pronounce: ${item.pronunciation}`}
-                      >
-                        {audioLoading === item.letter ? '⏳' : '🔊'}
-                      </button>
-                    )}
-
-                    {/* Stars Display */}
-                    <div style={{ marginBottom: '10px' }}>
-                      {[1, 2, 3].map((star) => (
-                        <span 
-                          key={star} 
-                          style={{ 
-                            fontSize: '16px', 
-                            color: star <= stars ? '#ffc107' : '#ddd',
-                            margin: '0 1px'
-                          }}
-                        >
-                          ⭐
-                        </span>
-                      ))}
-                    </div>
-
-                    {/* Status */}
-                    <div style={{
-                      fontSize: '12px',
-                      fontWeight: 'bold',
-                      color: isCompleted ? '#28a745' : (isUnlocked ? '#007bff' : '#6c757d')
-                    }}>
-                      {isCompleted ? 'COMPLETED' : (isUnlocked ? 'START' : 'LOCKED')}
-                    </div>
                   </div>
-                )
-              })}
-            </div>
-          </div>
 
-          <div className="card">
-            <h2>Your Progress</h2>
-            <div style={{ backgroundColor: '#f8f9fa', padding: '20px', borderRadius: '8px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '20px' }}>
-                <div>
-                  <h4 style={{ margin: '0 0 5px 0' }}>Levels Completed</h4>
-                  <p style={{ margin: '0', fontSize: '24px', fontWeight: 'bold', color: '#28a745' }}>
-                    {progress.filter(p => p.completed_at).length} / {uyirEzhuthugal.length}
-                  </p>
+                  {/* stars row */}
+                  <div className="bl-stars">
+                    {[1,2,3].map(s => (
+                      <span key={s} className={`bl-star ${s <= stars ? 'bl-star-lit' : ''}`}>★</span>
+                    ))}
+                  </div>
+
+                  {/* level number */}
+                  <div className="bl-lvl-badge">{item.level}</div>
                 </div>
-                <div>
-                  <h4 style={{ margin: '0 0 5px 0' }}>Total Stars Earned</h4>
-                  <p style={{ margin: '0', fontSize: '24px', fontWeight: 'bold', color: '#ffc107' }}>
-                    {progress.reduce((sum, p) => sum + (p.stars_awarded || 0), 0)}
-                  </p>
-                </div>
-                <div>
-                  <h4 style={{ margin: '0 0 5px 0' }}>Current Level</h4>
-                  <p style={{ margin: '0', fontSize: '24px', fontWeight: 'bold', color: '#007bff' }}>
-                    {progress.filter(p => p.completed_at).length + 1}
+
+                {/* info panel beside node */}
+                <div className={`bl-node-info ${offset >= 0 ? 'bl-info-right' : 'bl-info-left'}`}>
+                  <p className="bl-rom">{item.rom}</p>
+                  {unlocked && (
+                    <button
+                      className="bl-sound-btn"
+                      onClick={(e) => playAudio(item.letter, e)}
+                      disabled={audioLoading === item.letter}
+                    >
+                      {audioLoading === item.letter ? '⏳' : '🔊'}
+                    </button>
+                  )}
+                  <p className="bl-status">
+                    {done ? '✅ Done' : unlocked ? (isCurrent ? '▶ Play' : '🔓 Open') : '🔮 Locked'}
                   </p>
                 </div>
               </div>
-            </div>
+            )
+          })}
+
+          {/* finish star */}
+          <div className="bl-finish">
+            <div className={`bl-finish-star ${completedCount === 12 ? 'bl-finish-lit' : ''}`}>🌟</div>
+            <p className="bl-finish-label">{completedCount === 12 ? 'Master!' : 'Finish'}</p>
           </div>
-        </>
+        </div>
       )}
     </div>
   )
 }
-
-export default BeginnerLevels

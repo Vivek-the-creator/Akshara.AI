@@ -1,0 +1,113 @@
+/* ── Daily Practice ── */
+.daily-practice {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.page-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #111827;
+  margin: 0;
+}
+
+.page-subtitle {
+  font-size: 1.1rem;
+  color: rgba(17, 24, 39, 0.6);
+  margin: 0;
+}
+
+/* ── Games Grid ── */
+.games-grid {
+  display: grid;
+  gap: 24px;
+}
+
+.game-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 28px;
+  text-align: center;
+  transition: transform 0.2s;
+}
+
+.game-card:hover {
+  transform: translateY(-4px);
+}
+
+.game-icon {
+  font-size: 3rem;
+  margin-bottom: 8px;
+}
+
+.game-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.game-desc {
+  font-size: 0.9rem;
+  color: rgba(17, 24, 39, 0.6);
+  margin: 0;
+}
+
+.game-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: auto;
+}
+
+.game-xp {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #FFB84D;
+}
+
+.game-btn {
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(123, 97, 255, 0.2);
+  background: rgba(123, 97, 255, 0.1);
+  color: #7B61FF;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.game-btn:hover {
+  background: rgba(123, 97, 255, 0.2);
+}
+
+/* ── Streak Banner ── */
+.streak-banner {
+  padding: 24px 32px;
+}
+
+.streak-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.streak-icon {
+  font-size: 2.5rem;
+}
+
+.streak-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.streak-desc {
+  font-size: 0.9rem;
+  color: rgba(17, 24, 39, 0.6);
+  margin: 0;
+}

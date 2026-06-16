@@ -2,16 +2,20 @@ import React from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import ErrorBoundary from './components/ErrorBoundary'
-import Navbar from './components/Navbar'
+
 import { useAuth } from './contexts/AuthContext'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
-import WritingTutor from './pages/WritingTutor'
-import PerfectSpeechRecognition from './components/voice/PerfectSpeechRecognition'
 import LevelSelection from './pages/LevelSelection'
+import WritingTutor from './pages/WritingTutor'
+import DailyPractice from './pages/DailyPractice'
+import Achievements from './pages/Achievements'
+import PerfectSpeechRecognition from './components/voice/PerfectSpeechRecognition'
 import BeginnerLevels from './pages/BeginnerLevels'
 import LetterPractice from './pages/LetterPractice'
+import Profile from './pages/Profile'
+import Settings from './pages/Settings'
 
 function AppContent() {
   const { user, loading } = useAuth()
@@ -23,13 +27,11 @@ function AppContent() {
       </div>
     )
   }
-  
+
   return (
     <ErrorBoundary>
       <div className="App">
-        <Navbar />
-        <div className="container">
-          <Routes>
+        <Routes>
             <Route path="/" element={<Home />} />
             <Route 
               path="/login" 
@@ -40,6 +42,10 @@ function AppContent() {
               element={user ? <Dashboard /> : <Navigate to="/login" />} 
             />
             <Route 
+              path="/levels" 
+              element={user ? <LevelSelection /> : <Navigate to="/login" />} 
+            />
+            <Route 
               path="/writing" 
               element={user ? <WritingTutor /> : <Navigate to="/login" />} 
             />
@@ -48,8 +54,20 @@ function AppContent() {
               element={user ? <PerfectSpeechRecognition /> : <Navigate to="/login" />} 
             />
             <Route 
-              path="/levels" 
-              element={user ? <LevelSelection /> : <Navigate to="/login" />} 
+              path="/daily-practice" 
+              element={user ? <DailyPractice /> : <Navigate to="/login" />} 
+            />
+            <Route 
+              path="/achievements" 
+              element={user ? <Achievements /> : <Navigate to="/login" />} 
+            />
+            <Route 
+              path="/profile" 
+              element={user ? <Profile /> : <Navigate to="/login" />} 
+            />
+            <Route 
+              path="/settings" 
+              element={user ? <Settings /> : <Navigate to="/login" />} 
             />
             <Route 
               path="/levels/beginner" 
@@ -59,8 +77,7 @@ function AppContent() {
               path="/practice/beginner/uyir-ezhuthugal/:level" 
               element={user ? <LetterPractice /> : <Navigate to="/login" />} 
             />
-          </Routes>
-        </div>
+        </Routes>
       </div>
     </ErrorBoundary>
   )

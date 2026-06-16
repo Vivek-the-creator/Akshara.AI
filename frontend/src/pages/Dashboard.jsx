@@ -1,131 +1,113 @@
 import React, { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { writingService } from '../services/writingService'
+import Layout from '../components/Layout'
+import './Dashboard.css'
 
-const Dashboard = () => {
+const STATS = [
+  { icon: '🔥', label: 'Daily Streak', value: '7', color: '#ff6432' },
+  { icon: '⭐', label: 'XP Points', value: '1,240', color: '#7B61FF' },
+  { icon: '🏆', label: 'Level', value: '3', color: '#FFB84D' },
+  { icon: '🎯', label: 'Weekly Goal', value: '65%', color: '#4ADE80' },
+]
+
+const QUICK_ACCESS = [
+  { icon: '🤖', label: 'AI Tutor', path: '/levels' },
+  { icon: '✍️', label: 'Writing Practice', path: '/writing' },
+  { icon: '🎤', label: 'Speech Practice', path: '/voice-practice' },
+  { icon: '📚', label: 'Vocabulary Games', path: '/daily-practice' },
+]
+
+const ACHIEVEMENTS = [
+  { icon: '🔥', label: 'First Steps', earned: true },
+  { icon: '📚', label: 'Word Collector', earned: true },
+  { icon: '🎯', label: 'Quick Learner', earned: true },
+  { icon: '🎤', label: 'Fluent Speaker', earned: false },
+  { icon: '📝', label: 'Writing Expert', earned: false },
+  { icon: '⭐', label: 'Streak Master', earned: false },
+]
+
+export default function Dashboard() {
   const { user } = useAuth()
-  const [sessions, setSessions] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const navigate = useNavigate()
+  const [xpAnim, setXpAnim] = useState(false)
 
   useEffect(() => {
-    const fetchSessions = async () => {
-      try {
-        const data = await writingService.getSessions()
-        setSessions(data)
-      } catch (error) {
-        setError('Failed to load writing sessions')
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchSessions()
+    setTimeout(() => setXpAnim(true), 300)
   }, [])
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
-
   return (
-    <div>
-      <div className="card">
-        <h1>Welcome to Your Dashboard</h1>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginTop: '20px' }}>
-          <div style={{ padding: '20px', backgroundColor: '#f8f9fa', borderRadius: '8px' }}>
-            <h3>👤 User Information</h3>
-            <p><strong>Username:</strong> {user?.username}</p>
-            <p><strong>Email:</strong> {user?.email}</p>
-            <p><strong>Full Name:</strong> {user?.full_name || 'Not set'}</p>
-            <p><strong>Age:</strong> {user?.age || 'Not set'}</p>
-            <p><strong>Learning Language:</strong> {user?.learning_language || 'Not set'}</p>
+    <Layout>
+      <div className="dashboard">
+        {/* Stats Row */}
+        <div className="stats-grid grid-24 grid-24-4">
+          {STATS.map((stat, i) => (
+            <div key={i} className="stat-card glass-card">
+              <div className="stat-icon" style={{ color: stat.color }}>{stat.icon}</div>
+              <div className="stat-info">
+                <h3 className="stat-value">{stat.value}</h3>
+                <p className="stat-label">{stat.label}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Continue Learning */}
+        <div className="continue-card glass-card">
+          <div className="continue-header">
+            <h2 className="section-sub">Continue Learning</h2>
+            <span className="level-badge">Level 3</span>
           </div>
-          
-          <div style={{ padding: '20px', backgroundColor: '#e3f2fd', borderRadius: '8px' }}>
-            <h3>📊 Learning Progress</h3>
-            <p><strong>Total Writing Sessions:</strong> {sessions.length}</p>
-            <p><strong>Account Status:</strong> <span style={{ color: '#28a745' }}>Active</span></p>
-            <p><strong>Member Since:</strong> {user?.created_at ? formatDate(user.created_at) : 'Unknown'}</p>
+          <div className="continue-content">
+            <h3 className="continue-title">Letters of Tamil</h3>
+            <p className="continue-desc">Master the basic vowels and consonants</p>
+            <div className="progress-bar">
+              <div className="progress-fill" style={{ width: xpAnim ? '65%' : '0%' }} />
+            </div>
+            <button className="btn-premium btn-primary" onClick={() => navigate('/levels')}>
+              Continue Lesson →
+            </button>
           </div>
         </div>
-      </div>
 
-      <div className="card">
-        <h2>Recent Writing Sessions</h2>
-        {loading ? (
-          <div className="loading">Loading sessions...</div>
-        ) : error ? (
-          <div className="error">{error}</div>
-        ) : sessions.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '40px' }}>
-            <p>No writing sessions yet. Start your learning journey!</p>
-            <a href="/levels" className="btn" style={{ marginTop: '20px', display: 'inline-block' }}>
-              Start Writing Practice
-            </a>
+        {/* Daily Mission */}
+        <div className="mission-card glass-card">
+          <div className="mission-illustration">🎯</div>
+          <div className="mission-info">
+            <h3 className="mission-title">Daily Mission</h3>
+            <p className="mission-desc">Complete 3 lessons to earn rewards</p>
+            <div className="mission-progress">
+              <span>2/3 completed</span>
+              <span className="mission-xp">+150 XP</span>
+            </div>
           </div>
-        ) : (
-          <div>
-            {sessions.map((session) => (
-              <div key={session.id} style={{ 
-                padding: '15px', 
-                border: '1px solid #ddd', 
-                borderRadius: '8px', 
-                marginBottom: '10px',
-                backgroundColor: '#fafafa'
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div>
-                    <h4 style={{ margin: '0 0 5px 0' }}>{session.title || 'Untitled Session'}</h4>
-                    <p style={{ margin: '0', color: '#666', fontSize: '14px' }}>
-                      Created: {formatDate(session.created_at)}
-                    </p>
-                    <p style={{ margin: '0', color: '#666', fontSize: '14px' }}>
-                      Language: {session.language || 'Not specified'}
-                    </p>
-                  </div>
-                  <div>
-                    <span style={{ 
-                      padding: '4px 8px', 
-                      backgroundColor: '#28a745', 
-                      color: 'white', 
-                      borderRadius: '4px',
-                      fontSize: '12px'
-                    }}>
-                      {session.status || 'Completed'}
-                    </span>
-                  </div>
-                </div>
+        </div>
+
+        {/* Quick Access */}
+        <div className="quick-grid grid-24 grid-24-4">
+          {QUICK_ACCESS.map((item, i) => (
+            <button key={i} className="quick-card glass-card" onClick={() => navigate(item.path)}>
+              <span className="quick-icon">{item.icon}</span>
+              <span className="quick-label">{item.label}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Achievements */}
+        <div className="achievements-section">
+          <h2 className="section-sub">Achievements</h2>
+          <div className="achievements-grid grid-24 grid-24-6">
+            {ACHIEVEMENTS.map((ach, i) => (
+              <div key={i} className={`ach-card glass-card ${ach.earned ? 'earned' : 'locked'}`}>
+                <div className="ach-icon">{ach.icon}</div>
+                <p className="ach-label">{ach.label}</p>
+                {ach.earned && <div className="ach-badge">✓</div>}
+                {!ach.earned && <div className="ach-lock">🔒</div>}
               </div>
             ))}
           </div>
-        )}
-      </div>
-
-      <div className="card">
-        <h2>Quick Actions</h2>
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-          <a href="/levels" className="btn">
-            📝 Start Writing Practice
-          </a>
-          <a href="/voice-practice" className="btn" style={{ background: 'linear-gradient(135deg, #667eea, #764ba2)' }}>
-            🎤 Voice Practice
-          </a>
-          <a href="/writing" className="btn btn-secondary">
-            📷 Upload Writing (Legacy)
-          </a>
-          <button className="btn btn-secondary" disabled>
-            📈 View Progress (Coming Soon)
-          </button>
         </div>
       </div>
-    </div>
+    </Layout>
   )
 }
-
-export default Dashboard

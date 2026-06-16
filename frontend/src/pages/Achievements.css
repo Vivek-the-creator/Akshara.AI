@@ -1,0 +1,94 @@
+/* ── Achievements ── */
+.achievements {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.page-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #111827;
+  margin: 0;
+}
+
+.page-subtitle {
+  font-size: 1.1rem;
+  color: rgba(17, 24, 39, 0.6);
+  margin: 0;
+}
+
+/* ── Achievements Grid ── */
+.achievements-grid {
+  display: grid;
+  gap: 24px;
+}
+
+.ach-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 32px 24px;
+  text-align: center;
+  position: relative;
+  transition: transform 0.2s;
+}
+
+.ach-card.earned:hover {
+  transform: translateY(-4px);
+}
+
+.ach-card.locked {
+  opacity: 0.5;
+}
+
+.ach-icon-wrapper {
+  position: relative;
+}
+
+.ach-icon {
+  font-size: 3rem;
+}
+
+.ach-glow {
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #7B61FF, #5AA8FF);
+  filter: blur(20px);
+  opacity: 0.3;
+  animation: glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes glow {
+  from { opacity: 0.2; transform: scale(0.8); }
+  to   { opacity: 0.4; transform: scale(1); }
+}
+
+.ach-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+}
+
+.ach-desc {
+  font-size: 0.9rem;
+  color: rgba(17, 24, 39, 0.6);
+  margin: 0;
+}
+
+.ach-badge {
+  padding: 6px 16px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #FFB84D, #ff8c00);
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.ach-lock {
+  font-size: 0.85rem;
+  color: rgba(17, 24, 39, 0.4);
+}

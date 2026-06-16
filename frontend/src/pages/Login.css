@@ -1,0 +1,513 @@
+/* ── Root ── */
+.login-root {
+  min-height: 100vh;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #F8FAFF;
+}
+.login-visible { opacity: 1; }
+
+/* ── Aurora Background ── */
+.login-aurora-bg {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #F8FAFF 0%, #EDF2FF 50%, #E0EBFF 100%);
+}
+
+/* Aurora blobs */
+.aurora {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.15;
+  animation: auroraPulse 10s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+.aurora-1 {
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, #7B61FF, transparent);
+  top: -200px; left: -150px;
+  animation-delay: 0s;
+}
+.aurora-2 {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle, #5AA8FF, transparent);
+  top: -100px; right: -100px;
+  animation-delay: 2.5s;
+}
+.aurora-3 {
+  width: 450px; height: 450px;
+  background: radial-gradient(circle, #FFB84D, transparent);
+  bottom: -150px; left: 30%;
+  opacity: 0.1;
+  animation-delay: 5s;
+}
+.aurora-4 {
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, #4ADE80, transparent);
+  bottom: -100px; right: 20%;
+  opacity: 0.1;
+  animation-delay: 3s;
+}
+@keyframes auroraPulse {
+  0%   { transform: scale(1) translate(0, 0); }
+  25%  { transform: scale(1.1) translate(20px, 10px); }
+  50%  { transform: scale(1.2) translate(-10px, 20px); }
+  75%  { transform: scale(1.1) translate(15px, -15px); }
+  100% { transform: scale(1) translate(0, 0); }
+}
+
+/* Stars */
+.stars {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    radial-gradient(2px 2px at 20% 30%, rgba(17, 24, 39, 0.6), transparent),
+    radial-gradient(1px 1px at 40% 20%, rgba(17, 24, 39, 0.4), transparent),
+    radial-gradient(2px 2px at 60% 45%, rgba(17, 24, 39, 0.5), transparent),
+    radial-gradient(1px 1px at 80% 35%, rgba(17, 24, 39, 0.3), transparent),
+    radial-gradient(2px 2px at 15% 60%, rgba(17, 24, 39, 0.4), transparent),
+    radial-gradient(1px 1px at 35% 75%, rgba(17, 24, 39, 0.5), transparent),
+    radial-gradient(2px 2px at 55% 65%, rgba(17, 24, 39, 0.3), transparent),
+    radial-gradient(1px 1px at 75% 80%, rgba(17, 24, 39, 0.4), transparent),
+    radial-gradient(2px 2px at 90% 70%, rgba(17, 24, 39, 0.5), transparent);
+  background-repeat: repeat;
+  background-size: 200% 200%;
+  animation: starTwinkle 20s linear infinite;
+}
+@keyframes starTwinkle {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.8; }
+}
+
+/* Particles */
+.login-particle {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(123,97,255,0.6);
+  opacity: 0;
+  animation: particleFloat linear infinite;
+  pointer-events: none;
+}
+@keyframes particleFloat {
+  0%   { opacity: 0; transform: translateY(100vh) scale(0); }
+  10%  { opacity: 0.8; }
+  90%  { opacity: 0.4; }
+  100% { opacity: 0; transform: translateY(-100vh) scale(1); }
+}
+
+/* ── Left Panel - 3D Mascot ── */
+.login-left {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.mascot-3d-container {
+  position: relative;
+  width: 400px;
+  height: 400px;
+  perspective: 1000px;
+}
+
+.mascot-orbit-system {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  animation: rotateSystem 30s linear infinite;
+}
+
+/* Orbit rings */
+.orbit-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(123,97,255,0.15);
+  top: 50%;
+  left: 50%;
+  transform-style: preserve-3d;
+}
+.orbit-ring-1 {
+  width: 320px;
+  height: 320px;
+  margin: -160px 0 0 -160px;
+  border-color: rgba(123,97,255,0.2);
+  animation: orbitRotate 20s linear infinite reverse;
+}
+.orbit-ring-2 {
+  width: 240px;
+  height: 240px;
+  margin: -120px 0 0 -120px;
+  border-color: rgba(90,168,255,0.2);
+  animation: orbitRotate 25s linear infinite;
+}
+.orbit-ring-3 {
+  width: 160px;
+  height: 160px;
+  margin: -80px 0 0 -80px;
+  border-color: rgba(255,184,77,0.2);
+  animation: orbitRotate 15s linear infinite reverse;
+}
+@keyframes orbitRotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Orbiting letters */
+.orbiting-letter {
+  position: absolute;
+  font-weight: 800;
+  font-size: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(123, 97, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(123, 97, 255, 0.2);
+  box-shadow: 0 0 20px rgba(123, 97, 255, 0.3);
+  animation: floatLetter 6s ease-in-out infinite;
+}
+.orbiting-letter.tamil { color: #7B61FF; text-shadow: 0 0 10px rgba(123, 97, 255, 0.5); }
+.orbiting-letter.hindi { color: #5AA8FF; text-shadow: 0 0 10px rgba(90, 168, 255, 0.5); }
+.orbiting-letter.english { color: #FFB84D; text-shadow: 0 0 10px rgba(255, 184, 77, 0.5); }
+@keyframes floatLetter {
+  0%, 100% { transform: scale(1) translateY(0); }
+  50% { transform: scale(1.1) translateY(-10px); }
+}
+
+/* Mascot center */
+.mascot-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 120px;
+  height: 120px;
+  margin: -60px 0 0 -60px;
+  z-index: 10;
+}
+
+.mascot-core {
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, #7B61FF, #5AA8FF);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 4rem;
+  animation: mascotPulse 3s ease-in-out infinite;
+  box-shadow: 
+    0 0 40px rgba(123, 97, 255, 0.6),
+    0 0 80px rgba(90, 168, 255, 0.4),
+    inset 0 0 30px rgba(123, 97, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.mascot-pulse {
+  position: absolute;
+  inset: -20px;
+  border-radius: 50%;
+  border: 2px solid rgba(123,97,255,0.4);
+  animation: pulseRing 2s ease-out infinite;
+}
+@keyframes pulseRing {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+@keyframes mascotPulse {
+  0%, 100% { transform: scale(1); filter: brightness(1); }
+  50% { transform: scale(1.05); filter: brightness(1.2); }
+}
+
+.mascot-glow-3d {
+  position: absolute;
+  inset: -40px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(123,97,255,0.5), transparent, transparent);
+  filter: blur(30px);
+  animation: glowRotate 25s linear infinite;
+}
+@keyframes glowRotate {
+  from { transform: rotate(0deg) scale(1); }
+  to   { transform: rotate(360deg) scale(1.2); }
+}
+
+@keyframes rotateSystem {
+  from { transform: rotateY(0deg) rotateX(10deg); }
+  to   { transform: rotateY(360deg) rotateX(10deg); }
+}
+
+/* ── Right Panel - Glass Login ── */
+.login-right {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  position: relative;
+}
+
+.glass-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 3.5rem 2.5rem;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(123, 97, 255, 0.2);
+  backdrop-filter: blur(30px);
+  box-shadow: 
+    0 8px 32px rgba(123, 97, 255, 0.1),
+    inset 0 0 40px rgba(123, 97, 255, 0.03);
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(123, 97, 255, 0.4), transparent);
+}
+
+.glass-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 28px;
+  background: radial-gradient(circle at 50% 0%, rgba(123, 97, 255, 0.1), transparent 50%);
+  pointer-events: none;
+}
+
+.card-content { position: relative; z-index: 2; }
+
+/* Card header */
+.card-header {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.brand-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.2rem;
+  border-radius: 50px;
+  background: rgba(123, 97, 255, 0.1);
+  border: 1px solid rgba(123, 97, 255, 0.3);
+  margin-bottom: 1.5rem;
+  backdrop-filter: blur(10px);
+}
+
+.brand-badge .emoji {
+  font-size: 1.3rem;
+}
+
+.brand-badge .name {
+  color: #7B61FF;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+  background: linear-gradient(135deg, #7B61FF, #5AA8FF);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.card-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #111827;
+  margin: 0 0 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+.card-subtitle {
+  color: rgba(17, 24, 39, 0.6);
+  font-size: 1rem;
+  margin: 0;
+}
+
+/* Form styles */
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  display: block;
+  color: rgba(17, 24, 39, 0.8);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.02em;
+}
+
+.glass-input {
+  width: 100%;
+  padding: 1rem 1.25rem;
+  border-radius: 16px;
+  border: 1px solid rgba(123, 97, 255, 0.2);
+  background: rgba(255, 255, 255, 0.9);
+  color: #111827;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+.glass-input::placeholder {
+  color: rgba(17, 24, 39, 0.4);
+}
+.glass-input:focus {
+  outline: none;
+  border-color: #7B61FF;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(123, 97, 255, 0.2);
+}
+
+/* Select dropdown */
+.glass-select {
+  width: 100%;
+  padding: 1rem 1.25rem;
+  border-radius: 16px;
+  border: 1px solid rgba(123, 97, 255, 0.2);
+  background: rgba(255, 255, 255, 0.9);
+  color: #111827;
+  font-size: 1rem;
+  cursor: pointer;
+}
+.glass-select option {
+  background: #ffffff;
+  color: #111827;
+}
+
+/* Submit button */
+.glass-btn {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  border-radius: 16px;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #7B61FF, #5AA8FF);
+  color: white;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(123, 97, 255, 0.3);
+  letter-spacing: 0.02em;
+}
+.glass-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(123, 97, 255, 0.4);
+}
+.glass-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Toggle form button */
+.toggle-form {
+  width: 100%;
+  padding: 0.9rem 1.5rem;
+  border-radius: 16px;
+  border: 1px solid rgba(123, 97, 255, 0.3);
+  background: rgba(255, 255, 255, 0.8);
+  color: rgba(17, 24, 39, 0.8);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.toggle-form:hover {
+  background: rgba(123, 97, 255, 0.1);
+  border-color: rgba(123, 97, 255, 0.5);
+}
+
+/* Error message */
+.glass-error {
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #dc2626;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .login-root {
+    flex-direction: column;
+  }
+  
+  .login-left {
+    min-height: 40vh;
+  }
+  
+  .mascot-3d-container {
+    width: 280px;
+    height: 280px;
+  }
+  
+  .mascot-center {
+    width: 80px;
+    height: 80px;
+    margin: -40px 0 0 -40px;
+  }
+  
+  .mascot-core {
+    font-size: 3rem;
+  }
+  
+  .glass-card {
+    padding: 2.5rem 1.8rem;
+    margin: 1rem;
+    max-width: 100%;
+  }
+  
+  .card-title {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .login-left {
+    min-height: 30vh;
+  }
+  
+  .mascot-3d-container {
+    width: 200px;
+    height: 200px;
+  }
+  
+  .login-right {
+    padding: 1rem;
+  }
+  
+  .glass-card {
+    padding: 2rem 1.5rem;
+    border-radius: 20px;
+  }
+  
+  .card-title {
+    font-size: 1.5rem;
+  }
+  
+  .orbiting-letter {
+    font-size: 1.8rem;
+    width: 45px;
+    height: 45px;
+  }
+}

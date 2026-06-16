@@ -1,0 +1,152 @@
+/* ── Level Selection ── */
+.level-selection {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.page-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #111827;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.page-subtitle {
+  font-size: 1.1rem;
+  color: rgba(17, 24, 39, 0.6);
+  margin: 0;
+}
+
+/* ── Journey Path ── */
+.levels-journey {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.level-node {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 32px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 10px 40px rgba(123, 97, 255, 0.08);
+  width: 100%;
+  max-width: 600px;
+  position: relative;
+  transition: transform 0.2s;
+}
+
+.level-node:hover {
+  transform: translateY(-4px);
+}
+
+.level-done {
+  border: 1px solid rgba(74, 222, 128, 0.2);
+}
+
+.level-active {
+  border: 1px solid rgba(123, 97, 255, 0.3);
+}
+
+.level-locked {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.level-icon {
+  font-size: 3rem;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px;
+  background: rgba(123, 97, 255, 0.1);
+}
+
+.level-content {
+  flex: 1;
+}
+
+.level-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 8px;
+}
+
+.level-desc {
+  font-size: 1rem;
+  color: rgba(17, 24, 39, 0.6);
+  margin: 0 0 16px;
+}
+
+.level-connector {
+  width: 4px;
+  height: 40px;
+  background: linear-gradient(180deg, #7B61FF, #5AA8FF);
+  border-radius: 2px;
+}
+
+.level-connector.done {
+  background: linear-gradient(180deg, #4ADE80, #5AA8FF);
+}
+
+.check-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #4ADE80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.pulse-ring {
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 2px solid rgba(123, 97, 255, 0.4);
+  animation: pulse 2s ease-out infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+.locked-text {
+  font-size: 0.9rem;
+  color: rgba(17, 24, 39, 0.4);
+}
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 2rem;
+  }
+  
+  .level-node {
+    padding: 24px;
+  }
+  
+  .level-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 2rem;
+  }
+}

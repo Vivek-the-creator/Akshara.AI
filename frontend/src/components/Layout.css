@@ -1,0 +1,342 @@
+/* ── Layout Root ── */
+.layout-root {
+  display: flex;
+  min-height: 100vh;
+  background: #F8FAFF;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  transition: all 0.3s ease;
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  width: 280px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  border-right: 1px solid rgba(123, 97, 255, 0.12);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px 16px;
+  position: fixed;
+  height: 100vh;
+  z-index: 100;
+  transition: width 0.3s ease;
+  box-shadow: 0 10px 40px rgba(123, 97, 255, 0.08);
+}
+
+.layout-root.collapsed .sidebar {
+  width: 80px;
+}
+.layout-root.collapsed .sidebar .logo-text,
+.layout-root.collapsed .sidebar .nav-label {
+  display: none;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  text-decoration: none;
+  margin-bottom: 32px;
+}
+
+.logo-icon {
+  font-size: 28px;
+}
+
+.logo-text {
+  font-size: 20px;
+  font-weight: 800;
+  color: #111827;
+  letter-spacing: -0.02em;
+}
+
+.logo-ai {
+  background: linear-gradient(135deg, #7B61FF, #5AA8FF);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Nav Menu ── */
+.nav-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  text-decoration: none;
+  color: #111827;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-item:hover {
+  background: rgba(123, 97, 255, 0.08);
+  transform: translateX(4px);
+}
+
+.nav-item.active {
+  background: linear-gradient(135deg, rgba(123, 97, 255, 0.15), rgba(90, 168, 255, 0.15));
+  color: #7B61FF;
+}
+
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 20%;
+  bottom: 20%;
+  width: 4px;
+  background: linear-gradient(135deg, #7B61FF, #5AA8FF);
+  border-radius: 0 4px 4px 0;
+}
+
+.nav-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.nav-label {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* ── Assistant Card ── */
+.assistant-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 16px;
+  background: rgba(123, 97, 255, 0.08);
+  border: 1px solid rgba(123, 97, 255, 0.15);
+}
+
+.assistant-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #7B61FF, #5AA8FF);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.assistant-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.assistant-text {
+  font-size: 11px;
+  color: rgba(17, 24, 39, 0.6);
+  margin: 0;
+}
+
+/* ── Main Content ── */
+.main-content {
+  flex: 1;
+  margin-left: 280px;
+  transition: margin-left 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.layout-root.collapsed .main-content {
+  margin-left: 80px;
+}
+
+/* ── Top Header ── */
+.top-header {
+  height: 80px;
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(123, 97, 255, 0.12);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.header-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.02em;
+}
+
+.header-stats {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stat-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  background: rgba(123, 97, 255, 0.08);
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.stat-chip.stat-streak {
+  background: rgba(255, 100, 50, 0.1);
+  color: #ff6432;
+}
+
+.stat-icon {
+  font-size: 16px;
+}
+
+.stat-value {
+  font-weight: 700;
+}
+
+.logout-btn {
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(123, 97, 255, 0.2);
+  background: rgba(255, 255, 255, 0.6);
+  color: #7B61FF;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.logout-btn:hover {
+  background: rgba(123, 97, 255, 0.15);
+}
+
+/* ── Content Wrapper ── */
+.content-wrapper {
+  padding: 24px 32px;
+  flex: 1;
+}
+
+/* ── Glass Card Component ── */
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  border-radius: 24px;
+  box-shadow: 0 10px 40px rgba(123, 97, 255, 0.08);
+  padding: 24px;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.glass-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 15px 50px rgba(123, 97, 255, 0.12);
+}
+
+/* ── Premium Button ── */
+.btn-premium {
+  height: 52px;
+  padding: 0 24px;
+  border-radius: 16px;
+  border: none;
+  font-weight: 600;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #7B61FF, #5AA8FF);
+  color: white;
+  box-shadow: 0 4px 16px rgba(123, 97, 255, 0.3);
+}
+
+.btn-primary:hover {
+  transform: scale(1.03);
+  box-shadow: 0 6px 20px rgba(123, 97, 255, 0.4);
+}
+
+.btn-secondary {
+  background: rgba(123, 97, 255, 0.1);
+  color: #7B61FF;
+  border: 1px solid rgba(123, 97, 255, 0.2);
+}
+
+.btn-secondary:hover {
+  background: rgba(123, 97, 255, 0.2);
+  transform: scale(1.03);
+}
+
+/* ── Grid System ── */
+.grid-24 {
+  display: grid;
+  gap: 24px;
+}
+
+.grid-24-1 { grid-template-columns: 1fr; }
+.grid-24-2 { grid-template-columns: repeat(2, 1fr); }
+.grid-24-3 { grid-template-columns: repeat(3, 1fr); }
+.grid-24-4 { grid-template-columns: repeat(4, 1fr); }
+
+@media (max-width: 1024px) {
+  .grid-24-4 { grid-template-columns: repeat(2, 1fr); }
+  .grid-24-3 { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 80px;
+  }
+
+  .logo-text,
+  .nav-label,
+  .assistant-text,
+  .assistant-title {
+    display: none;
+  }
+
+  .main-content {
+    margin-left: 80px;
+  }
+
+  .grid-24-3,
+  .grid-24-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .top-header {
+    padding: 0 16px;
+    height: 64px;
+  }
+
+  .content-wrapper {
+    padding: 16px;
+  }
+
+  .header-title {
+    font-size: 18px;
+  }
+}

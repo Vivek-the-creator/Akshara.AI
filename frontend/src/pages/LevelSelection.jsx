@@ -1,134 +1,45 @@
 import React from 'react'
-import { useNavigate } from 'react-router-dom'
+import Layout from '../components/Layout'
+import './LevelSelection.css'
 
-const LevelSelection = () => {
-  const navigate = useNavigate()
+const LEVELS = [
+  { id: 1, title: 'Village of Letters', icon: '🏡', status: 'done', desc: 'Learn basic vowels and consonants' },
+  { id: 2, title: 'Forest of Words', icon: '🌲', status: 'active', desc: 'Build simple words' },
+  { id: 3, title: 'Temple of Sentences', icon: '🛕', status: 'locked', desc: 'Form sentences' },
+  { id: 4, title: 'Kingdom of Stories', icon: '🏰', status: 'locked', desc: 'Read stories' },
+  { id: 5, title: 'Galaxy of Fluency', icon: '🌌', status: 'locked', desc: 'Master fluency' },
+]
 
-  const stages = [
-    {
-      name: 'Beginner',
-      description: 'Start with basic letters and sounds',
-      icon: '🌱',
-      unlocked: true,
-      color: '#28a745'
-    },
-    {
-      name: 'Intermediate',
-      description: 'Practice words and simple sentences',
-      icon: '🌿',
-      unlocked: false,
-      color: '#ffc107'
-    },
-    {
-      name: 'Pro',
-      description: 'Master complex writing and composition',
-      icon: '🌳',
-      unlocked: false,
-      color: '#dc3545'
-    }
-  ]
-
-  const handleStageClick = (stage) => {
-    if (stage.unlocked) {
-      navigate(`/levels/${stage.name.toLowerCase()}`)
-    }
-  }
-
+export default function LevelSelection() {
   return (
-    <div>
-      <div className="card">
-        <h1>Choose Your Learning Stage</h1>
-        <p style={{ color: '#666', marginBottom: '40px' }}>
-          Select a stage to begin your handwriting learning journey. Each stage builds upon the previous one.
-        </p>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '30px' }}>
-          {stages.map((stage) => (
-            <div
-              key={stage.name}
-              onClick={() => handleStageClick(stage)}
-              style={{
-                padding: '40px 30px',
-                borderRadius: '12px',
-                backgroundColor: stage.unlocked ? '#ffffff' : '#f8f9fa',
-                border: stage.unlocked ? `2px solid ${stage.color}` : '2px solid #dee2e6',
-                cursor: stage.unlocked ? 'pointer' : 'not-allowed',
-                textAlign: 'center',
-                transition: 'all 0.3s ease',
-                opacity: stage.unlocked ? 1 : 0.6,
-                transform: stage.unlocked ? 'scale(1)' : 'scale(0.95)'
-              }}
-              onMouseEnter={(e) => {
-                if (stage.unlocked) {
-                  e.currentTarget.style.transform = 'scale(1.05)'
-                  e.currentTarget.style.boxShadow = '0 8px 25px rgba(0,0,0,0.15)'
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (stage.unlocked) {
-                  e.currentTarget.style.transform = 'scale(1)'
-                  e.currentTarget.style.boxShadow = 'none'
-                }
-              }}
-            >
-              <div style={{ fontSize: '64px', marginBottom: '20px' }}>
-                {stage.icon}
+    <Layout>
+      <div className="level-selection">
+        <h1 className="page-title">Learning Path</h1>
+        <p className="page-subtitle">Your journey through language mastery</p>
+        
+        <div className="levels-journey">
+          {LEVELS.map((level, i) => (
+            <React.Fragment key={level.id}>
+              <div className={`level-node level-${level.status}`}>
+                <div className="level-icon">{level.icon}</div>
+                <div className="level-content">
+                  <h3 className="level-title">{level.title}</h3>
+                  <p className="level-desc">{level.desc}</p>
+                  {level.status === 'active' && (
+                    <button className="btn-premium btn-primary">Continue →</button>
+                  )}
+                  {level.status === 'locked' && (
+                    <span className="locked-text">🔒 Locked</span>
+                  )}
+                </div>
+                {level.status === 'done' && <div className="check-badge">✓</div>}
+                {level.status === 'active' && <div className="pulse-ring" />}
               </div>
-              <h2 style={{ margin: '0 0 10px 0', color: stage.unlocked ? stage.color : '#6c757d' }}>
-                {stage.name}
-              </h2>
-              <p style={{ margin: '0 0 20px 0', color: '#666', fontSize: '16px' }}>
-                {stage.description}
-              </p>
-              <div style={{
-                padding: '8px 16px',
-                backgroundColor: stage.unlocked ? stage.color : '#6c757d',
-                color: 'white',
-                borderRadius: '20px',
-                fontSize: '14px',
-                fontWeight: 'bold',
-                display: 'inline-block'
-              }}>
-                {stage.unlocked ? 'START' : 'LOCKED'}
-              </div>
-              {!stage.unlocked && (
-                <p style={{ margin: '15px 0 0 0', fontSize: '12px', color: '#999' }}>
-                  Complete previous stage to unlock
-                </p>
-              )}
-            </div>
+              {i < LEVELS.length - 1 && <div className="level-connector" />}
+            </React.Fragment>
           ))}
         </div>
       </div>
-
-      <div className="card">
-        <h2>How Progress Works</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginTop: '20px' }}>
-          <div style={{ textAlign: 'center', padding: '20px' }}>
-            <div style={{ fontSize: '36px', marginBottom: '10px' }}>🔓</div>
-            <h4>Sequential Learning</h4>
-            <p style={{ color: '#666', fontSize: '14px' }}>
-              Complete each level to unlock the next one
-            </p>
-          </div>
-          <div style={{ textAlign: 'center', padding: '20px' }}>
-            <div style={{ fontSize: '36px', marginBottom: '10px' }}>⭐</div>
-            <h4>Star Ratings</h4>
-            <p style={{ color: '#666', fontSize: '14px' }}>
-              Earn stars based on your performance and attempts
-            </p>
-          </div>
-          <div style={{ textAlign: 'center', padding: '20px' }}>
-            <div style={{ fontSize: '36px', marginBottom: '10px' }}>📈</div>
-            <h4>Track Progress</h4>
-            <p style={{ color: '#666', fontSize: '14px' }}>
-              Monitor your learning journey and improvements
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
+    </Layout>
   )
 }
-
-export default LevelSelection
